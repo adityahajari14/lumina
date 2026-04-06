@@ -5,20 +5,24 @@ import { useState } from "react";
 const accordionData = [
   {
     title: "Product Details",
-    content: "Our total blackout blinds block 100% of light, perfect for bedrooms, nurseries, or media rooms. The specially coated thermal backing also helps insulate your home, keeping it warmer in winter and cooler in summer."
+    content:
+      "Our total blackout blinds block 100% of light, perfect for bedrooms, nurseries, or media rooms. The specially coated thermal backing also helps insulate your home, keeping it warmer in winter and cooler in summer.",
   },
   {
     title: "Specifications",
-    content: "Material: 100% Polyester with thermal blackout coating. Wipe clean only. Safety: Complies with all child safety regulations. Maximum Drop: 200cm."
+    content:
+      "Material: 100% Polyester with thermal blackout coating. Wipe clean only. Safety: Complies with all child safety regulations. Maximum Drop: 200cm.",
   },
   {
     title: "Measuring & Installation",
-    content: "Detailed measuring and fitting instructions are included with every order. If you need help, our customer service team is available via chat or phone."
+    content:
+      "Detailed measuring and fitting instructions are included with every order. If you need help, our customer service team is available via chat or phone.",
   },
   {
     title: "Delivery & Returns",
-    content: "Standard delivery takes 3-5 working days. We offer free returns within 60 days if you're not completely satisfied with your purchase."
-  }
+    content:
+      "Standard delivery takes 3-5 working days. We offer free returns within 60 days if you're not completely satisfied with your purchase.",
+  },
 ];
 
 export default function ProductAccordion() {

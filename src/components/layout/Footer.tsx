@@ -13,7 +13,7 @@ const Footer = () => {
         <p className="font-sans text-[14px] leading-[20px] text-white/60 text-center max-w-[384px] mb-8">
           Join 40,000+ customers who trust Lumina 
           <br className="hidden sm:block" />
-          for the perfect night's sleep.
+          for the perfect night&apos;s sleep.
         </p>
 
         <Link 

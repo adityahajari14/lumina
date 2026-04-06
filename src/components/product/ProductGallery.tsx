@@ -2,23 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import type { Product } from "@/types";
 
-const images = [
-  "/product/gallery-1.webp",
-  "/product/gallery-2.webp",
-  "/product/gallery-3.webp",
-  "/product/gallery-4.webp",
-  "/product/gallery-5.webp",
-  "/product/gallery-6.webp",
-  "/product/gallery-7.webp",
-  "/product/gallery-8.webp",
-  "/product/gallery-9.webp",
-  "/product/gallery-10.webp",
-];
+interface ProductGalleryProps {
+  product: Product;
+}
 
-export default function ProductGallery() {
+export default function ProductGallery({ product }: ProductGalleryProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const images = product.images;
 
   // Prevent body scrolling when modal is open
   useEffect(() => {
@@ -32,8 +25,21 @@ export default function ProductGallery() {
     };
   }, [isModalOpen]);
 
+  if (images.length === 0) {
+    return (
+      <div className="flex flex-col gap-3 w-full self-start z-10">
+        <div className="bg-[#eaedf0] rounded-2xl w-full h-[584px] flex items-center justify-center">
+          <span className="font-sans text-sm text-[#657186]">No product images available</span>
+        </div>
+      </div>
+    );
+  }
+
+  const getAltText = (index: number) =>
+    product.imageAlts[index] || `${product.name} image ${index + 1}`;
+
   return (
-    <div className="flex flex-col gap-3 w-full self-start sticky top-24 z-10">       
+    <div className="flex flex-col gap-3 w-full self-start z-10">       
       {/* Main Image */}
       <div 
         className="bg-[#eaedf0] rounded-2xl w-full h-[584px] relative overflow-hidden flex items-center justify-center cursor-pointer"
@@ -41,7 +47,7 @@ export default function ProductGallery() {
       >
         <Image
           src={images[activeIdx] || images[0]}
-          alt="Lumina product image"
+          alt={getAltText(activeIdx)}
           fill
           className="object-cover"
           priority
@@ -100,7 +106,7 @@ export default function ProductGallery() {
               >
                 <Image
                   src={src}
-                  alt={`Thumbnail ${idx + 1}`}
+                  alt={getAltText(idx)}
                   fill
                   className="object-cover opacity-60"
                   sizes="(max-width: 768px) 20vw, 10vw"
@@ -120,7 +126,7 @@ export default function ProductGallery() {
             >
               <Image
                 src={src}
-                alt={`Thumbnail ${idx + 1}`}
+                alt={getAltText(idx)}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 20vw, 10vw"
@@ -168,7 +174,7 @@ export default function ProductGallery() {
                   >
                     <Image
                       src={src}
-                      alt={`Thumbnail ${idx + 1}`}
+                      alt={getAltText(idx)}
                       fill
                       className="object-cover"
                       sizes="80px"
@@ -191,7 +197,7 @@ export default function ProductGallery() {
                 <div className="relative w-full h-full max-w-3xl flex items-center justify-center">
                   <Image
                     src={images[activeIdx] || images[0]}
-                    alt={`Full size image ${activeIdx + 1}`}
+                    alt={getAltText(activeIdx)}
                     fill
                     className="object-contain mix-blend-multiply"
                     sizes="(max-width: 1024px) 100vw, 800px"

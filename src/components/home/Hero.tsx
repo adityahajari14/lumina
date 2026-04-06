@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="relative w-full bg-[#eaedf0] min-h-[90vh] flex items-center justify-center py-20 lg:py-[134px] overflow-hidden">
+    <section className="relative w-full bg-[#eaedf0] min-h-[90vh] flex items-center justify-center py-20 lg:py-30 lg:pt-10 overflow-hidden">
       {/* Background image & gradient overlay */}
       <div className="absolute inset-0 z-0">
         <Image 
