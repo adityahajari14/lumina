@@ -106,10 +106,10 @@ export default function Hero() {
         </div>
 
         {/* Right Column - Image */}
-        <div className="relative w-full aspect-[4/5] max-w-[480px] lg:max-w-[592px] mx-auto lg:ml-auto mt-2 lg:mt-0 order-2 lg:order-2">
+        <div className="relative w-full aspect-[1] max-w-[480px] lg:max-w-[592px] mx-auto lg:ml-auto mt-2 lg:mt-0 order-2 lg:order-2">
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-[0_25px_50px_-12px_rgba(19,23,32,0.1)]">
             <SmartVideo
-              src="/product/blackout.mp4"
+              src="/home/blackout-hero.webm"
               posterSrc="/product/gallery-1.webp"
               posterAlt="Blackout blind over a bedroom window"
               eager
