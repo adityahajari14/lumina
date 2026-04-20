@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/server/database';
+import { getOrderTableColumns, hasOrderColumn } from '@/lib/server/order-table-schema';
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +12,19 @@ export async function POST(request: Request) {
 
     console.log(`Webhook: Refund created for Shopify order ${refund.order_id}`);
     console.log(`  Refund amount: ${refund.transactions?.[0]?.amount || 'unknown'}`);
+
+    const orderTableColumns = await getOrderTableColumns();
+
+    if (hasOrderColumn(orderTableColumns, 'shopifyOrderId')) {
+      await prisma.order.updateMany({
+        where: {
+          shopifyOrderId: String(refund.order_id),
+        },
+        data: {
+          status: 'REFUNDED',
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/server/database';
+import { getOrderTableColumns, hasOrderColumn } from '@/lib/server/order-table-schema';
 import { orderMatchesSource } from '@/lib/server/shopify-order-source';
 
 type ShopifyLineItemProperty = {
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, ignored: true });
     }
 
+    const orderTableColumns = await getOrderTableColumns();
     console.log(`Webhook: Order paid #${order.order_number} (Shopify ID: ${order.id})`);
 
     const orderNumber = `BLACKOUT-SHOP-${order.order_number || order.id}`;
@@ -88,21 +90,27 @@ export async function POST(request: Request) {
     });
 
     const orderData = {
-      shopifyOrderId: String(order.id),
       status: 'CONFIRMED' as const,
       customerEmail: (order.email || order.customer?.email || '').trim().toLowerCase() || null,
       customerName: order.customer
         ? `${order.customer.first_name || ''} ${order.customer.last_name || ''}`.trim()
         : null,
       shippingAddress: order.shipping_address || null,
-      lineItems: normalizeLineItems(order.line_items),
-      currencyCode: order.currency || null,
       subtotal: parseFloat(order.subtotal_price) || 0,
       tax: parseFloat(order.total_tax) || 0,
       shipping: order.shipping_lines?.[0]
         ? parseFloat(order.shipping_lines[0].price) || 0
         : 0,
       total: parseFloat(order.total_price) || 0,
+      ...(hasOrderColumn(orderTableColumns, 'shopifyOrderId')
+        ? { shopifyOrderId: String(order.id) }
+        : {}),
+      ...(hasOrderColumn(orderTableColumns, 'lineItems')
+        ? { lineItems: normalizeLineItems(order.line_items) }
+        : {}),
+      ...(hasOrderColumn(orderTableColumns, 'currencyCode')
+        ? { currencyCode: order.currency || null }
+        : {}),
     };
 
     if (existingOrder) {

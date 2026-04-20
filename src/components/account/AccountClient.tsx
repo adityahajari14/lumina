@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { UserButton } from '@clerk/nextjs';
 
 type OrderLineItem = {
@@ -46,20 +45,13 @@ type AccountClientProps = {
   };
   orders: OrderSummary[];
   defaultAddress: Address | null;
-  shouldSetupPassword: boolean;
 };
 
 export default function AccountClient({
   customer,
   orders,
   defaultAddress,
-  shouldSetupPassword,
 }: AccountClientProps) {
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(shouldSetupPassword);
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const name = [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'Customer';
   const orderCount = orders.length;
   const totalSpent = orders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0);
@@ -93,53 +85,6 @@ export default function AccountClient({
       .replace(/\b\w/g, (char) => char.toUpperCase());
   const configurationEntries = (configuration: Record<string, string>) =>
     Object.entries(configuration).filter(([, value]) => value);
-
-  const onSetPassword = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/auth/custom/set-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      const payload = await response.json();
-
-      if (!response.ok) {
-        setError(payload?.error?.message || 'Could not set password');
-        return;
-      }
-
-      setShowPasswordPrompt(false);
-      setPassword('');
-    } catch {
-      setError('Could not set password');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onSkip = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/auth/custom/skip-password-setup', {
-        method: 'POST',
-      });
-      if (!response.ok) {
-        const payload = await response.json();
-        setError(payload?.error?.message || 'Could not skip password setup');
-        return;
-      }
-      setShowPasswordPrompt(false);
-    } catch {
-      setError('Could not skip password setup');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <main className="w-full bg-[#f9fafb]">
@@ -355,45 +300,6 @@ export default function AccountClient({
         </section>
       </div>
 
-      {showPasswordPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6">
-            <h3 className="text-lg font-semibold text-[#131720]">Set your password</h3>
-            <p className="mt-2 text-sm text-[#657186]">
-              You logged in with OTP. You can set a password now or skip.
-            </p>
-
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimum 8 characters"
-              className="mt-4 w-full rounded-md border border-[#d9e0ea] px-3 py-2 text-sm outline-none focus:border-[#131720]"
-            />
-
-            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-
-            <div className="mt-5 flex gap-3">
-              <button
-                type="button"
-                onClick={onSetPassword}
-                disabled={loading || password.length < 8}
-                className="flex-1 rounded-md bg-[#131720] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-              >
-                {loading ? 'Saving...' : 'Set Password'}
-              </button>
-              <button
-                type="button"
-                onClick={onSkip}
-                disabled={loading}
-                className="flex-1 rounded-md border border-[#d9e0ea] px-4 py-2 text-sm font-medium text-[#131720]"
-              >
-                Skip
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

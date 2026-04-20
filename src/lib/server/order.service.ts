@@ -292,6 +292,8 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
 export async function getDraftOrderStatus(draftOrderId: string): Promise<{
   id: string;
   status: string;
+  orderId: string | null;
+  orderName: string | null;
   invoiceUrl: string;
   totalPrice: string;
   createdAt: string;
@@ -317,6 +319,8 @@ export async function getDraftOrderStatus(draftOrderId: string): Promise<{
   return {
     id: draftOrder.id.toString(),
     status: draftOrder.status,
+    orderId: draftOrder.order_id?.id ? String(draftOrder.order_id.id) : null,
+    orderName: draftOrder.name || null,
     invoiceUrl: draftOrder.invoice_url,
     totalPrice: draftOrder.total_price,
     createdAt: draftOrder.created_at,

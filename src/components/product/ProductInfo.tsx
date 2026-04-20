@@ -206,9 +206,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     <div className="flex flex-col gap-6 w-full max-w-[600px] pb-16">
       {/* Header Info */}
       <div className="flex flex-col gap-2">
-        <span className="font-sans font-medium text-[#4051b5] text-[12px] tracking-[1.2px] uppercase">
-          Total Blackout Blind
-        </span>
         <h1 className="font-playfair font-medium text-[#131720] text-4xl lg:text-[48px] leading-tight">
           {product.name}
         </h1>
@@ -233,7 +230,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         </svg>
         <div className="flex flex-col text-sm">
           <span className="font-sans text-[#657186]">Estimated Delivery</span>
-          <span className="font-sans font-semibold text-[#131720]">12 Working Days</span>
+          <span className="font-sans font-semibold text-[#131720]">
+            {product.estimatedDelivery || "12 Working Days"}
+          </span>
         </div>
       </div>
 
@@ -421,7 +420,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       <div id="product-details" className="border-t border-[#dbe0e6]">
-        <ProductAccordion />
+        <ProductAccordion items={product.accordionItems} />
       </div>
     </div>
   );

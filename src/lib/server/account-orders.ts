@@ -1,4 +1,5 @@
 import { prisma } from './database';
+import { getOrderTableColumns, hasOrderColumn } from './order-table-schema';
 
 export type AccountOrderLineItem = {
   id: string | null;
@@ -41,6 +42,17 @@ export type AccountOrderProfile = {
 };
 
 type AddressShape = Partial<AccountAddress>;
+type AccountOrderRow = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  customerName: string | null;
+  shippingAddress: unknown;
+  lineItems: unknown;
+  currencyCode: string | null;
+  total: string | number;
+  createdAt: Date | string;
+};
 
 function splitCustomerName(name: string | null | undefined): {
   firstName: string | null;
@@ -105,6 +117,14 @@ function normalizeLineItems(value: unknown): AccountOrderLineItem[] {
     }));
 }
 
+function normalizeDate(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
+function normalizeMoneyValue(value: string | number): string {
+  return typeof value === 'number' ? value.toString() : value;
+}
+
 function mapFinancialStatus(status: string): string | null {
   switch (status) {
     case 'REFUNDED':
@@ -145,16 +165,33 @@ export async function getAccountOrdersByEmail(email: string): Promise<AccountOrd
     };
   }
 
-  const orders = await prisma.order.findMany({
-    where: {
-      customerEmail: {
-        equals: normalizedEmail,
-        mode: 'insensitive',
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
+  const columns = await getOrderTableColumns();
+  const lineItemsSelect = hasOrderColumn(columns, 'lineItems')
+    ? '"lineItems"'
+    : 'NULL::jsonb AS "lineItems"';
+  const currencyCodeSelect = hasOrderColumn(columns, 'currencyCode')
+    ? 'COALESCE("currencyCode", \'GBP\') AS "currencyCode"'
+    : '\'GBP\'::text AS "currencyCode"';
+
+  const orders = await prisma.$queryRawUnsafe<AccountOrderRow[]>(
+    `
+      SELECT
+        "id",
+        "orderNumber",
+        "status",
+        "customerName",
+        "shippingAddress",
+        ${lineItemsSelect},
+        ${currencyCodeSelect},
+        "total",
+        "createdAt"
+      FROM "Order"
+      WHERE LOWER(COALESCE("customerEmail", '')) = LOWER($1)
+      ORDER BY "createdAt" DESC
+      LIMIT 10
+    `,
+    normalizedEmail
+  );
 
   const latestNamedOrder = orders.find((order) => order.customerName?.trim());
   const latestAddressOrder = orders.find((order) => normalizeAddress(order.shippingAddress));
@@ -165,10 +202,10 @@ export async function getAccountOrdersByEmail(email: string): Promise<AccountOrd
     recentOrders: orders.map((order) => ({
       id: order.id,
       name: order.orderNumber,
-      createdAt: order.createdAt.toISOString(),
+      createdAt: normalizeDate(order.createdAt),
       financialStatus: mapFinancialStatus(order.status),
       fulfillmentStatus: mapFulfillmentStatus(order.status),
-      totalPrice: order.total.toString(),
+      totalPrice: normalizeMoneyValue(order.total),
       currencyCode: order.currencyCode || 'GBP',
       lineItems: normalizeLineItems(order.lineItems),
     })),

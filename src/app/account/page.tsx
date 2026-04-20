@@ -34,7 +34,6 @@ export default async function AccountPage() {
       customer={customer}
       orders={orderProfile.recentOrders}
       defaultAddress={orderProfile.defaultAddress}
-      shouldSetupPassword={false}
     />
   );
 }

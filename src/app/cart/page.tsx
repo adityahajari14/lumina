@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { createCheckout, formatPriceWithCurrency } from "@/lib/api";
@@ -25,6 +26,7 @@ function formatConfiguration(config: CheckoutItemRequest["configuration"], width
 }
 
 export default function CartPage() {
+  const router = useRouter();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { customer } = useAuth();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -58,8 +60,10 @@ export default function CartPage() {
       }));
 
       const result = await createCheckout(items, customer?.email || undefined);
-      clearCart();
-      window.location.href = result.checkoutUrl;
+      window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
+      router.push(
+        `/checkout/confirmation?draftOrderId=${encodeURIComponent(result.draftOrderId)}&checkoutUrl=${encodeURIComponent(result.checkoutUrl)}`
+      );
     } catch (error) {
       console.error("Checkout error:", error);
       setCheckoutError(error instanceof Error ? error.message : "Checkout failed");
