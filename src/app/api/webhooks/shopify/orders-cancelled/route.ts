@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/server/database';
-import { orderMatchesSource } from '@/lib/server/shopify-order-source';
 
 export async function POST(request: Request) {
   try {
@@ -8,11 +7,6 @@ export async function POST(request: Request) {
 
     if (!order || !order.id) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
-
-    if (!orderMatchesSource(order)) {
-      console.log(`Webhook: Ignoring cancelled order ${order.id} because source tag did not match`);
-      return NextResponse.json({ success: true, ignored: true });
     }
 
     console.log(`Webhook: Order cancelled #${order.order_number} (Shopify ID: ${order.id})`);

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
 import Header from "../components/layout/Header";
@@ -43,17 +42,15 @@ export default function RootLayout({
       className={`${manrope.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        <ClerkProvider>
-          <AuthProvider>
-            <CartProvider>
-              <Header />
-              <main className="flex-1 flex flex-col content-stretch">
-                {children}
-              </main>
-              <Footer />
-            </CartProvider>
-          </AuthProvider>
-        </ClerkProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <main className="flex-1 flex flex-col content-stretch">
+              {children}
+            </main>
+            <Footer />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

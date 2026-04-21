@@ -1,7 +1,6 @@
 import { calculateProductPrice, type PricingRequest } from './pricing.service';
 import { getAdminApiUrl, getAdminHeaders, validateShopifyConfig } from './shopify-admin';
 import { getCachedProduct } from './product-cache';
-import { SOURCE_SITE, SOURCE_TAG } from './shopify-order-source';
 import { getAccountOrderByShopifyOrderId, type AccountOrderSummary } from './account-orders';
 
 // ============================================
@@ -146,7 +145,6 @@ function buildLineItemProperties(
   }
 
   properties.push({ name: '_calculatedPrice', value: calculatedPrice.toFixed(2) });
-  properties.push({ name: '_sourceSite', value: SOURCE_SITE });
 
   return properties;
 }
@@ -241,13 +239,8 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
     draft_order: {
       line_items: lineItems,
       use_customer_default_address: true,
-      tags: SOURCE_TAG,
-      note: [SOURCE_SITE, request.note].filter(Boolean).join(' | '),
+      note: request.note || '',
       ...(request.customerEmail && { email: request.customerEmail }),
-      note_attributes: [
-        { name: 'sourceSite', value: SOURCE_SITE },
-        { name: 'sourceTag', value: SOURCE_TAG },
-      ],
     },
   };
 

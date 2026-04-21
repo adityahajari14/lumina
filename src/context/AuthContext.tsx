@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, type ReactNode } from 'react';
-import { useUser } from '@clerk/nextjs';
+import React, { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ShopifyCustomer } from '@/lib/shopify';
 
 // ============================================
@@ -11,6 +10,7 @@ import type { ShopifyCustomer } from '@/lib/shopify';
 interface AuthContextType {
   customer: ShopifyCustomer | null;
   isLoading: boolean;
+  refreshCustomer: () => Promise<ShopifyCustomer | null>;
 }
 
 // ============================================
@@ -32,20 +32,39 @@ export const useAuth = () => {
 // ============================================
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { isLoaded, user } = useUser();
-  const primaryEmailAddress =
-    user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses[0]?.emailAddress ?? null;
+  const [customer, setCustomer] = useState<ShopifyCustomer | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const customer: ShopifyCustomer | null = user && primaryEmailAddress ? {
-    id: user.id,
-    firstName: user.firstName ?? null,
-    lastName: user.lastName ?? null,
-    email: primaryEmailAddress,
-    phone: user.primaryPhoneNumber?.phoneNumber ?? null,
-  } : null;
+  const refreshCustomer = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/me', { cache: 'no-store' });
+
+      if (!response.ok) {
+        setCustomer(null);
+        return null;
+      }
+
+      const payload = await response.json();
+      const nextCustomer = (payload.data ?? null) as ShopifyCustomer | null;
+      setCustomer(nextCustomer);
+      return nextCustomer;
+    } catch {
+      setCustomer(null);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const value = useMemo(
+    () => ({ customer, isLoading, refreshCustomer }),
+    [customer, isLoading, refreshCustomer]
+  );
 
   return (
-    <AuthContext.Provider value={{ customer, isLoading: !isLoaded }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

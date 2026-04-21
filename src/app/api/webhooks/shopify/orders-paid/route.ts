@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/server/database';
 import { getOrderTableColumns, hasOrderColumn } from '@/lib/server/order-table-schema';
-import { orderMatchesSource } from '@/lib/server/shopify-order-source';
 
 type ShopifyLineItemProperty = {
   name?: string | null;
@@ -74,11 +73,6 @@ export async function POST(request: Request) {
     if (!order || !order.id) {
       console.error('Webhook: Invalid order payload');
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
-
-    if (!orderMatchesSource(order)) {
-      console.log(`Webhook: Ignoring paid order ${order.id} because source tag did not match`);
-      return NextResponse.json({ success: true, ignored: true });
     }
 
     const orderTableColumns = await getOrderTableColumns();

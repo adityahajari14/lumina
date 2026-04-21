@@ -1,39 +1,28 @@
-import { auth, clerkClient } from '@clerk/nextjs/server';
-import AccountClient from '@/components/account/AccountClient';
-import { getAccountOrdersByEmail } from '@/lib/server/account-orders';
+import { redirect } from 'next/navigation';
+import { getCustomer } from '@/lib/auth';
 
-export default async function AccountPage() {
-  const { isAuthenticated, redirectToSignIn, userId } = await auth();
-
-  if (!isAuthenticated || !userId) {
-    return redirectToSignIn({ returnBackUrl: '/account' });
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams?: { logout?: string };
+}) {
+  if (searchParams?.logout === '1') {
+    redirect('/api/auth/shopify/logout?return_to=/');
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  const primaryEmailAddress =
-    user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? null;
-  const orderProfile = primaryEmailAddress
-    ? await getAccountOrdersByEmail(primaryEmailAddress)
-    : {
-        firstName: null,
-        lastName: null,
-        defaultAddress: null,
-        recentOrders: [],
-      };
+  const accountDomain =
+    process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_DOMAIN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN?.replace(/^orders\./, 'account.') ||
+    '';
 
-  const customer = {
-    firstName: user.firstName || orderProfile.firstName || null,
-    lastName: user.lastName || orderProfile.lastName || null,
-    email: primaryEmailAddress || 'No email on file',
-    phone: user.primaryPhoneNumber?.phoneNumber || null,
-  };
+  if (!accountDomain) {
+    redirect('/');
+  }
 
-  return (
-    <AccountClient
-      customer={customer}
-      orders={orderProfile.recentOrders}
-      defaultAddress={orderProfile.defaultAddress}
-    />
-  );
+  const customer = await getCustomer();
+  if (!customer) {
+    redirect(`/api/auth/shopify/login?return_to=${encodeURIComponent(`https://${accountDomain}`)}`);
+  }
+
+  redirect(`https://${accountDomain}`);
 }

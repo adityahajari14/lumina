@@ -189,6 +189,19 @@ const COLLECTIONS_QUERY = `
 `;
 
 // ============================================
+// Customer GraphQL Query
+// ============================================
+
+const CUSTOMER_FIELDS = `
+  id
+  firstName
+  lastName
+  emailAddress {
+    emailAddress
+  }
+`;
+
+// ============================================
 // GraphQL Fetch Helper
 // ============================================
 
@@ -461,5 +474,75 @@ export async function fetchShopifyProductByHandleMerged(
   if (!sfProduct) return null;
 
   return mapStorefrontProduct(sfProduct, minimumPrices);
+}
+
+// ============================================
+// Customer Account Functions
+// ============================================
+
+/**
+ * Fetch the currently authenticated customer's profile.
+ */
+export async function shopifyCustomerFetch(
+  accessToken: string
+): Promise<ShopifyCustomer | null> {
+  const discoveryResponse = await fetch(
+    `https://${SHOPIFY_STORE_DOMAIN}/.well-known/customer-account-api`,
+    { cache: 'no-store' }
+  );
+
+  if (!discoveryResponse.ok) {
+    throw new Error(`Customer account API discovery failed: ${discoveryResponse.status}`);
+  }
+
+  const discoveryJson: { graphql_api: string } = await discoveryResponse.json();
+  const response = await fetch(discoveryJson.graphql_api, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: accessToken,
+      Origin: typeof window === 'undefined'
+        ? (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'))
+        : window.location.origin,
+      'User-Agent': 'blackout-blinds-headless-auth',
+    },
+    body: JSON.stringify({
+      query: `query Customer { customer { ${CUSTOMER_FIELDS} } }`,
+    }),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Customer account API error: ${response.status}`);
+  }
+
+  const json: {
+    data?: {
+      customer?: {
+        id: string;
+        firstName: string | null;
+        lastName: string | null;
+        emailAddress?: { emailAddress: string } | null;
+      } | null;
+    };
+    errors?: Array<{ message: string }>;
+  } = await response.json();
+
+  if (json.errors?.length) {
+    throw new Error(json.errors[0]?.message || 'Customer account GraphQL error');
+  }
+
+  const customer = json.data?.customer;
+  if (!customer?.emailAddress?.emailAddress) {
+    return null;
+  }
+
+  return {
+    id: customer.id,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    email: customer.emailAddress.emailAddress,
+    phone: null,
+  };
 }
 
