@@ -90,7 +90,22 @@ const Footer = () => {
       </div>
 
       {/* Bottom Copyright Section */}
-      <div className="w-full border-t border-white/10 py-5 px-6 flex justify-center">
+      <div className="w-full border-t border-white/10 py-5 px-6 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-4 text-[12px] leading-4">
+          <Link
+            href="/privacy-policy"
+            className="font-sans text-white/50 hover:text-white transition-colors"
+          >
+            Privacy Policy
+          </Link>
+          <span className="text-white/25">|</span>
+          <Link
+            href="/terms-of-service"
+            className="font-sans text-white/50 hover:text-white transition-colors"
+          >
+            Terms of Service
+          </Link>
+        </div>
         <p className="font-sans text-[12px] leading-[16px] text-white/40 text-center">
           &copy; 2026 Lumina. All rights reserved. &middot; Made in Texas.
         </p>
