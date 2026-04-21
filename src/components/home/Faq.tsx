@@ -25,14 +25,6 @@ export default function Faq() {
     {
       question: "Do you offer custom sizes beyond the listed options?",
       answer: `Absolutely. Select "Custom" at checkout and enter your exact dimensions. We cut to any size from 20cm up to 250cm wide, and any drop from 30cm to 300cm. Custom orders are priced based on area — you'll see the price update as you type.`
-    },
-    {
-      question: "How long does delivery take?",
-      answer: "We cut and ship every blind within 3 business days. Standard delivery to most US states takes 2–5 business days after dispatch. Express options are available at checkout."
-    },
-    {
-      question: "What's your returns policy?",
-      answer: "We offer a 60-day hassle-free return policy on all standard sizes. Custom sizes are non-returnable, but we offer free replacement if there's a manufacturing defect."
     }
   ];
 

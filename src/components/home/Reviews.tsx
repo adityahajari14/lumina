@@ -1,40 +1,40 @@
 
 const reviewsData = [
   {
-    name: 'Emma T.',
-    location: 'Amsterdam',
+    name: 'Megan H.',
+    location: 'Leeds',
     product: 'Lumina · Anthracite · 100×150cm',
-    text: `"Genuinely the best blackout blind I've ever used. Not a single sliver of light comes through, even in summer. And installation? Three minutes, no joke."`,
+    text: `"The blind arrived well packed and fitted the window neatly. It cuts the morning light down a lot, and the finish looks clean in the room."`,
   },
   {
-    name: 'Jakob L.',
-    location: 'Copenhagen',
+    name: 'Daniel P.',
+    location: 'Bristol',
     product: 'Lumina · Cream · 80×120cm',
-    text: `"I've tried four other blackout blinds. None came close. The fabric is thick but elegant. The tension mount is so much better than drilling. Ordering two more."`,
+    text: `"Installation was straightforward and the tension fit feels secure. We used it in a guest room and the difference in light control was immediate."`,
   },
   {
-    name: 'Sara M.',
-    location: 'Helsinki',
-    product: 'Lumina · White · Custom',
-    text: `"My baby finally sleeps through the night. I'd been struggling for months. This blind transformed the room. Ordered custom size and it fit perfectly."`,
-  },
-  {
-    name: 'Tom R.',
+    name: 'Priya S.',
     location: 'London',
+    product: 'Lumina · White · Custom',
+    text: `"The custom size matched our recess well and the blind looks tidy once installed. It has made the bedroom noticeably darker at night."`,
+  },
+  {
+    name: 'Oliver J.',
+    location: 'Manchester',
     product: 'Lumina · Anthracite · 120×180cm',
-    text: `"Rented flat — couldn't drill anything. The tension mount is a game changer. Looks incredibly premium, the landlord didn't even notice when I moved out."`,
+    text: `"Good option for a rental because it does not need drilling. The blind feels solid, and the colour matched the product photos closely."`,
   },
   {
-    name: 'Annika B.',
-    location: 'Stockholm',
+    name: 'Sophie L.',
+    location: 'Edinburgh',
     product: 'Lumina · White · 60×90cm',
-    text: `"I love how clean and minimal it looks. The White shade matches my walls perfectly. Couldn't be happier — already recommended to five friends."`,
+    text: `"It sits neatly against the frame and looks minimal from the outside. The white finish is close to what I expected from the photos."`,
   },
   {
-    name: 'David K.',
-    location: 'Berlin',
+    name: 'James C.',
+    location: 'Cardiff',
     product: 'Lumina · Cream · 140×200cm',
-    text: `"Fast shipping, perfect fit, total blackout. Exactly what it says on the box. I was sceptical about the no-drill claim but it genuinely works. Solid product."`,
+    text: `"Delivery was quick and the blind was easy to set up. It gives us much better room darkening than the old roller blind we had before."`,
   },
 ];
 
@@ -83,7 +83,7 @@ export default function Reviews() {
                 4.9 / 5
               </p>
               <p className="font-[family-name:var(--font-dm-sans)] font-normal text-[#657186] text-xs leading-[16px]">
-                from 2,400+ verified reviews
+                from recent customer feedback
               </p>
             </div>
           </div>
