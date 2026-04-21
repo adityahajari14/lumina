@@ -56,13 +56,17 @@ export interface CreateCheckoutResponse {
 }
 
 interface ShopifyDraftOrderLineItem {
-  title: string;
-  price: string;
   quantity: number;
-  requires_shipping: boolean;
-  taxable: boolean;
   properties: { name: string; value: string }[];
+  variant_id?: number;
+  original_unit_price?: string;
+  title?: string;
+  price?: string;
+  requires_shipping?: boolean;
+  taxable?: boolean;
 }
+
+const variantIdByHandleCache = new Map<string, number | null>();
 
 // ============================================
 // Helper Functions
@@ -149,6 +153,45 @@ function buildLineItemProperties(
   return properties;
 }
 
+async function getPrimaryVariantIdByHandle(handle: string): Promise<number | null> {
+  const cached = variantIdByHandleCache.get(handle);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  try {
+    const url = getAdminApiUrl(`/products.json?handle=${encodeURIComponent(handle)}&fields=variants`);
+    const response = await fetch(url, {
+      headers: getAdminHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      variantIdByHandleCache.set(handle, null);
+      return null;
+    }
+
+    const data = (await response.json()) as {
+      products?: Array<{ variants?: Array<{ id?: number | string }> }>;
+    };
+    const rawId = data.products?.[0]?.variants?.[0]?.id;
+    const parsed =
+      typeof rawId === 'number'
+        ? rawId
+        : typeof rawId === 'string'
+          ? Number(rawId)
+          : NaN;
+
+    const variantId = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    variantIdByHandleCache.set(handle, variantId);
+    return variantId;
+  } catch (error) {
+    console.error(`[OrderService] Failed variant lookup for handle "${handle}":`, error);
+    variantIdByHandleCache.set(handle, null);
+    return null;
+  }
+}
+
 const PRICE_TOLERANCE = 0.50;
 
 // ============================================
@@ -216,14 +259,26 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
     const itemPrice = pricing.totalPrice;
     const lineItemTitle = `${productTitle} – ${item.widthInches}" × ${item.heightInches}"`;
 
-    lineItems.push({
-      title: lineItemTitle,
-      price: itemPrice.toFixed(2),
-      quantity: item.quantity,
-      requires_shipping: true,
-      taxable: true,
-      properties: buildLineItemProperties(item, itemPrice),
-    });
+    const variantId = await getPrimaryVariantIdByHandle(item.handle);
+    const properties = buildLineItemProperties(item, itemPrice);
+
+    if (variantId) {
+      lineItems.push({
+        variant_id: variantId,
+        original_unit_price: itemPrice.toFixed(2),
+        quantity: item.quantity,
+        properties,
+      });
+    } else {
+      lineItems.push({
+        title: lineItemTitle,
+        price: itemPrice.toFixed(2),
+        quantity: item.quantity,
+        requires_shipping: true,
+        taxable: true,
+        properties,
+      });
+    }
 
     responseLineItems.push({
       handle: item.handle,

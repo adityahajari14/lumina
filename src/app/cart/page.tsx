@@ -66,6 +66,7 @@ export default function CartPage() {
 
       const result = await createCheckout(items, customerEmail || undefined);
       window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
+      clearCart();
       router.replace("/");
     } catch (error) {
       console.error("Checkout error:", error);
@@ -283,15 +284,6 @@ export default function CartPage() {
               >
                 Clear Cart
               </button>
-
-              {customerEmail && (
-                <Link
-                  href="/api/auth/shopify/logout?return_to=/cart"
-                  className="w-full border border-[#dbe0e6] hover:border-[#131720] text-[#131720] text-center font-sans font-medium text-[15px] py-3 rounded-full transition-colors"
-                >
-                  Log Out
-                </Link>
-              )}
 
               <div className="flex items-center justify-center gap-2 text-[#657186] text-[12px] font-sans mt-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
