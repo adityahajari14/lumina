@@ -21,6 +21,12 @@ export const BLIND_COLOR_OPTIONS: PriceOption[] = [
     price: 0,
     hex: '#36454f',
   },
+  {
+    id: 'blue',
+    name: 'Blue',
+    price: 0,
+    hex: '#4a90d9',
+  },
 ];
 
 export const FRAME_COLOR_OPTIONS: PriceOption[] = [
