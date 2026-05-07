@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
@@ -388,10 +389,20 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           </svg>
           {isAddingToCart ? "Adding..." : "Add to Cart"}
         </button>
+        <div className="rounded-2xl border border-[#dbe0e6] bg-[#f9fafb] px-4 py-3 w-fit self-center mt-2">
+          <Image
+            src="/payment-badge.png"
+            alt="Accepted payment methods: PayPal, Visa, MasterCard, and American Express"
+            width={400}
+            height={60}
+            sizes="(max-width: 768px) 100vw, 450px"
+            className="h-auto w-auto"
+          />
+        </div>
       </div>
 
       {/* Guarantee Grid */}
-      <div className="grid grid-cols-3 gap-2 py-6 border-t border-[#dbe0e6] mt-4">
+      <div className="grid grid-cols-3 gap-2 py-6 border-t border-[#dbe0e6]">
         <div className="flex flex-col items-center text-center gap-2">
           <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">

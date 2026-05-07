@@ -15,10 +15,6 @@ export default function Faq() {
       answer: "The blind uses a spring tension bar. You extend the bar until it matches your window width, then press both ends firmly into the recess walls. The spring tension holds it securely without any fixings. It works in any recess between 5mm and 80mm deep."
     },
     {
-      question: "What if I order the wrong size?",
-      answer: "We offer free exchanges within 60 days. If you're unsure, use our measuring guide above — it covers everything you need to get the perfect fit. If you still have questions before ordering, email us and we'll guide you."
-    },
-    {
       question: "How do I clean it?",
       answer: "Spot clean with a damp cloth and mild soap. The fabric is wipe-clean and resistant to mould and mildew. Do not machine wash or submerge in water."
     },
