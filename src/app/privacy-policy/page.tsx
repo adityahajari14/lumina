@@ -98,7 +98,7 @@ const sections = [
   },
   {
     title: 'Contact',
-    content: `Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please call or email us at info@luminablackoutblinds.com or contact us at Carlinghow Mills, UNIT C41A, Batley, ENG, WF17 8LL, GB.`,
+    content: `Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please call or email us at info@luminablackoutblinds.com or contact us at Carlinghow Mills, UNIT C2, Batley, ENG, WF17 8LL, GB.`,
   },
 ];
 
