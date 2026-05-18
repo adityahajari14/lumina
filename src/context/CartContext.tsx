@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product, ProductConfiguration, Cart, CartItem, CartContextType } from '@/types';
+import { trackAddToCart } from '@/lib/meta-pixel';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -274,6 +275,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
     const updatedItems = [...cart.items, newItem];
     applyCartItems(updatedItems);
+    trackAddToCart(product);
     router.push('/cart');
   };
 

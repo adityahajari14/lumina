@@ -8,6 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { getComparePriceData } from "@/lib/compare-price";
 import { createCheckout, formatPriceWithCurrency } from "@/lib/api";
 import { getTotalInches } from "@/lib/pricing";
+import { trackInitiateCheckout } from "@/lib/meta-pixel";
 import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
 import {
   BLIND_COLOR_LABELS,
@@ -65,6 +66,8 @@ export default function CartPage() {
       }));
 
       const result = await createCheckout(items);
+      const currency = cart.items[0]?.product.currency || "USD";
+      trackInitiateCheckout(result, currency);
       window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
       clearCart();
       router.replace("/");
