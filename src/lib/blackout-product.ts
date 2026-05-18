@@ -1,7 +1,8 @@
 import type { ApiProduct, Product, ProductAccordionItem, ProductFeatures } from '@/types';
 import { fetchShopifyProductByHandleMerged } from '@/lib/shopify';
+import { BLACKOUT_PRODUCT_HANDLE } from '@/lib/product-routes';
 
-export const BLACKOUT_PRODUCT_HANDLE = 'non-driii-honeycomb-blackout-blinds';
+export { BLACKOUT_PRODUCT_HANDLE };
 
 const BLACKOUT_PRODUCT_FEATURES: ProductFeatures = {
   hasSize: true,

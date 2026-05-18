@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import SmartVideo from '../common/SmartVideo';
+import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
 
 export default function Hero() {
   return (
@@ -75,7 +76,7 @@ export default function Hero() {
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2">
             <Link 
-              href="/products" 
+              href={BLACKOUT_PRODUCT_PATH}
               className="bg-[#131720] text-[#f9fafb] font-sans font-medium text-sm text-center px-[32px] py-[16px] rounded-full hover:bg-black transition-colors"
             >
               Shop The Blind

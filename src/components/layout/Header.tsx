@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
+import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
 
 const Header = () => {
   const { cart } = useCart();
@@ -62,7 +63,7 @@ const Header = () => {
         {/* Navigation - Desktop */}
         <nav className="hidden lg:flex items-center gap-8 shrink-0">
           <Link 
-            href="/products" 
+            href={BLACKOUT_PRODUCT_PATH}
             className="font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] transition-colors leading-[20px] whitespace-nowrap"
           >
             The Blind
@@ -125,7 +126,7 @@ const Header = () => {
           <nav className="mt-2 bg-white/98 backdrop-blur border border-[#eaedf0] rounded-2xl shadow-[0_14px_34px_rgba(19,23,32,0.12)] py-3 px-2 overflow-hidden">
             <div className="flex flex-col">
               <Link
-                href="/products"
+                href={BLACKOUT_PRODUCT_PATH}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`px-4 py-2.5 rounded-xl font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] hover:bg-[#f7f8fa] transition-all duration-250 ${
                   mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'

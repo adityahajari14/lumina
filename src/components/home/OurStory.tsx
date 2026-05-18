@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
 
 export default function OurStory() {
   return (
@@ -73,7 +74,7 @@ export default function OurStory() {
 
           {/* CTA Button */}
           <Link 
-            href="/products" 
+            href={BLACKOUT_PRODUCT_PATH}
             className="flex items-center gap-2 bg-[#131720] text-[#f9fafb] font-sans font-medium text-[14px] leading-[20px] px-[28px] py-[14px] rounded-full hover:bg-black transition-colors mb-12 lg:mb-16"
           >
             See the Blind

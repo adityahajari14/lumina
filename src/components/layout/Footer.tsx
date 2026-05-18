@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
 
 const Footer = () => {
   const pathname = usePathname();
@@ -20,7 +21,7 @@ const Footer = () => {
   };
 
   const navItems = [
-    { label: 'The Blind', href: '/products' },
+    { label: 'The Blind', href: BLACKOUT_PRODUCT_PATH },
     { label: 'Measuring', href: '/guide/lumina_honeycomb_measuring_guide.pdf' },
     { label: 'Reviews', href: '/#reviews' },
     { label: 'FAQ', href: '/#faq' },
@@ -42,7 +43,7 @@ const Footer = () => {
         </p>
 
         <Link 
-          href="/products" 
+          href={BLACKOUT_PRODUCT_PATH}
           className="bg-white text-[#131720] font-sans font-medium text-[14px] leading-[20px] px-8 py-4 rounded-full hover:bg-gray-100 transition-colors"
         >
           Shop The Blind &rarr;

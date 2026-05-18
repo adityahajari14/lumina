@@ -1,22 +1,8 @@
-import ProductPage from "../../components/product/ProductPage";
+import { redirect } from "next/navigation";
 import { getBlackoutProduct } from "@/lib/blackout-product";
-import type { Metadata } from "next";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const product = await getBlackoutProduct();
-
-  return {
-    title: product.name,
-    description: product.description,
-    openGraph: {
-      title: product.name,
-      description: product.description,
-      images: product.images.length > 0 ? [product.images[0]] : [],
-    },
-  };
-}
+import { getProductPath } from "@/lib/product-routes";
 
 export default async function Page() {
   const product = await getBlackoutProduct();
-  return <ProductPage product={product} />;
+  redirect(getProductPath(product.slug));
 }

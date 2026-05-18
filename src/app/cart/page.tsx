@@ -8,6 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { getComparePriceData } from "@/lib/compare-price";
 import { createCheckout, formatPriceWithCurrency } from "@/lib/api";
 import { getTotalInches } from "@/lib/pricing";
+import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
 import {
   BLIND_COLOR_LABELS,
   FRAME_COLOR_LABELS,
@@ -84,7 +85,7 @@ export default function CartPage() {
               Your cart is empty. Build your custom Lumina blind to get started.
             </p>
             <Link
-              href="/products"
+              href={BLACKOUT_PRODUCT_PATH}
               className="inline-flex items-center justify-center bg-[#131720] text-white px-6 py-3 rounded-full font-medium hover:bg-black transition-colors"
             >
               Shop The Blind
@@ -103,7 +104,7 @@ export default function CartPage() {
     <div className="w-full min-h-screen bg-[#f9fafb] pt-8 md:pt-16 pb-20">
       <div className="max-w-[1248px] mx-auto px-4 md:px-6">
         <div className="flex flex-col gap-2 mb-10 md:mb-14">
-          <Link href="/products" className="text-[#657186] font-sans text-sm hover:text-[#131720] transition-colors flex items-center gap-2 mb-4">
+          <Link href={BLACKOUT_PRODUCT_PATH} className="text-[#657186] font-sans text-sm hover:text-[#131720] transition-colors flex items-center gap-2 mb-4">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
