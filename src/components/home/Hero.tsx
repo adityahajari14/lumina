@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import SmartVideo from '../common/SmartVideo';
-import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
+import { BLACKOUT_PRODUCT_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-routes';
 
 export default function Hero() {
   return (
@@ -82,7 +82,7 @@ export default function Hero() {
               Shop The Blind
             </Link>
             <Link 
-              href="/guide/lumina_honeycomb_measuring_guide.pdf" 
+              href={MEASURING_GUIDE_PATH}
               className="border border-[#dbe0e6] text-[#131720] font-sans font-medium text-sm text-center px-[32px] py-[16px] rounded-full hover:bg-white transition-colors"
             >
               How to Measure

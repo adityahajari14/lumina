@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
+import { BLACKOUT_PRODUCT_PATH, FITTING_GUIDE_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-routes';
 
 const Footer = () => {
   const pathname = usePathname();
@@ -22,7 +22,8 @@ const Footer = () => {
 
   const navItems = [
     { label: 'The Blind', href: BLACKOUT_PRODUCT_PATH },
-    { label: 'Measuring', href: '/guide/lumina_honeycomb_measuring_guide.pdf' },
+    { label: 'Measuring', href: MEASURING_GUIDE_PATH },
+    { label: 'Fitting', href: FITTING_GUIDE_PATH },
     { label: 'Reviews', href: '/#reviews' },
     { label: 'FAQ', href: '/#faq' },
   ];

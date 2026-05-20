@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
-import { BLACKOUT_PRODUCT_PATH } from '@/lib/product-routes';
+import { BLACKOUT_PRODUCT_PATH, FITTING_GUIDE_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-routes';
 
 const Header = () => {
   const { cart } = useCart();
@@ -69,10 +69,16 @@ const Header = () => {
             The Blind
           </Link>
           <Link 
-            href="/guide/lumina_honeycomb_measuring_guide.pdf"
+            href={MEASURING_GUIDE_PATH}
             className="font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] transition-colors leading-[20px] whitespace-nowrap"
           >
             Measuring
+          </Link>
+          <Link
+            href={FITTING_GUIDE_PATH}
+            className="font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] transition-colors leading-[20px] whitespace-nowrap"
+          >
+            Fitting
           </Link>
           <Link 
             href="/#reviews" 
@@ -136,7 +142,7 @@ const Header = () => {
                 The Blind
               </Link>
               <Link
-                href="/guide/lumina_honeycomb_measuring_guide.pdf"
+                href={MEASURING_GUIDE_PATH}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`px-4 py-2.5 rounded-xl font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] hover:bg-[#f7f8fa] transition-all duration-250 ${
                   mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
@@ -144,6 +150,16 @@ const Header = () => {
                 style={{ transitionDelay: mobileMenuOpen ? '80ms' : '0ms' }}
               >
                 Measuring
+              </Link>
+              <Link
+                href={FITTING_GUIDE_PATH}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-4 py-2.5 rounded-xl font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] hover:bg-[#f7f8fa] transition-all duration-250 ${
+                  mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+                }`}
+                style={{ transitionDelay: mobileMenuOpen ? '120ms' : '0ms' }}
+              >
+                Fitting
               </Link>
               <Link
                 href="/#reviews"
@@ -154,7 +170,7 @@ const Header = () => {
                 className={`px-4 py-2.5 rounded-xl font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] hover:bg-[#f7f8fa] transition-all duration-250 ${
                   mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
                 }`}
-                style={{ transitionDelay: mobileMenuOpen ? '120ms' : '0ms' }}
+                style={{ transitionDelay: mobileMenuOpen ? '160ms' : '0ms' }}
               >
                 Reviews
               </Link>
@@ -167,7 +183,7 @@ const Header = () => {
                 className={`px-4 py-2.5 rounded-xl font-sans font-medium text-[14px] text-[#657186] hover:text-[#131720] hover:bg-[#f7f8fa] transition-all duration-250 ${
                   mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
                 }`}
-                style={{ transitionDelay: mobileMenuOpen ? '160ms' : '0ms' }}
+                style={{ transitionDelay: mobileMenuOpen ? '200ms' : '0ms' }}
               >
                 FAQ
               </Link>
