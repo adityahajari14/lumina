@@ -31,7 +31,7 @@ const Footer = () => {
   return (
     <footer className="bg-[#000] flex flex-col items-center w-full mt-auto">
       {/* Top CTA Section */}
-      <div className="w-full border-b border-white/10 flex flex-col items-center pt-20 pb-[81px] px-6">
+      <div className="w-full border-b border-white/10 flex flex-col items-center pt-20 pb-10 px-6">
         <h2 className="font-playfair text-[#f9fafb] text-[48px] leading-none text-center flex flex-col sm:flex-row sm:gap-2 mb-4">
           <span className="font-medium">Ready to sleep in</span>
           <span className="font-normal italic">total darkness?</span>
@@ -49,6 +49,23 @@ const Footer = () => {
         >
           Shop The Blind &rarr;
         </Link>
+
+        <div className="mt-8 flex flex-col items-center gap-2 text-center">
+          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
+            Manufactured in
+          </span>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-sans text-[12px] leading-[18px] text-white/65">
+            <span>Texas, USA</span>
+            <span className="text-white/25" aria-hidden="true">
+              &middot;
+            </span>
+            <span>Leeds, UK</span>
+            <span className="text-white/25" aria-hidden="true">
+              &middot;
+            </span>
+            <span>Guangzhou, China</span>
+          </div>
+        </div>
       </div>
 
       {/* Middle Navigation Section */}
@@ -107,9 +124,16 @@ const Footer = () => {
           >
             Terms of Service
           </Link>
+          <span className="text-white/25">|</span>
+          <Link
+            href="/shipping-policy"
+            className="font-sans text-white/50 hover:text-white transition-colors"
+          >
+            Shipping Policy
+          </Link>
         </div>
         <p className="font-sans text-[12px] leading-[16px] text-white/40 text-center">
-          &copy; 2026 Lumina. All rights reserved. &middot; Made in Texas.
+          &copy; 2026 Lumina. All rights reserved.
         </p>
       </div>
     </footer>
