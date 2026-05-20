@@ -159,8 +159,29 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     }));
   };
 
+  const selectedBlindColor = BLIND_COLOR_OPTIONS.find((color) => color.id === config.blindColor);
+  const selectedFrameColor = FRAME_COLOR_OPTIONS.find((color) => color.id === config.frameColor);
+  const selectedOpeningDirection = OPENING_DIRECTION_OPTIONS.find(
+    (direction) => direction.id === config.openingDirection
+  );
+
+  const hasValidSize =
+    !product.features.hasSize ||
+    (config.width >= widthLimits.min &&
+      config.width <= widthLimits.max &&
+      config.height >= heightLimits.min &&
+      config.height <= heightLimits.max);
+
+  const hasRequiredCustomizations =
+    (!product.features.hasBlindColor || Boolean(config.blindColor)) &&
+    (!product.features.hasFrameColor || Boolean(config.frameColor)) &&
+    (!product.features.hasOpeningDirection || Boolean(config.openingDirection));
+
+  const isAddToCartDisabled =
+    isAddingToCart || !pricingLoaded || !hasValidSize || !hasRequiredCustomizations;
+
   const handleAddToCart = async () => {
-    if (config.width <= 0 || config.height <= 0) return;
+    if (isAddToCartDisabled) return;
 
     setIsAddingToCart(true);
 
@@ -198,12 +219,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       setIsAddingToCart(false);
     }
   };
-
-  const selectedBlindColor = BLIND_COLOR_OPTIONS.find((color) => color.id === config.blindColor);
-  const selectedFrameColor = FRAME_COLOR_OPTIONS.find((color) => color.id === config.frameColor);
-  const selectedOpeningDirection = OPENING_DIRECTION_OPTIONS.find(
-    (direction) => direction.id === config.openingDirection
-  );
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-[600px] pb-16">
@@ -370,17 +385,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {/* Add To Cart */}
       <div className="flex flex-col gap-3 mt-6">
         <button
+          type="button"
           onClick={handleAddToCart}
-          disabled={
-            isAddingToCart ||
-            !pricingLoaded ||
-            config.width <= 0 ||
-            config.height <= 0 ||
-            !config.blindColor ||
-            !config.frameColor ||
-            !config.openingDirection
-          }
-          className="bg-[#131720] hover:bg-black disabled:bg-[#9aa3af] transition-colors w-full rounded-full py-4 text-white font-medium flex items-center justify-center gap-2"
+          disabled={isAddToCartDisabled}
+          className="bg-[#131720] hover:bg-black disabled:bg-[#9aa3af] disabled:cursor-not-allowed transition-colors w-full rounded-full py-4 text-white font-medium flex items-center justify-center gap-2"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9" cy="21" r="1"></circle>
