@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Lora, Manrope } from "next/font/google";
 import Script from "next/script";
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import TopBar from "../components/layout/TopBar";
+import ShopifyAnalytics from "@/components/analytics/ShopifyAnalytics";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 
@@ -68,6 +70,9 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+        <Suspense fallback={null}>
+          <ShopifyAnalytics />
+        </Suspense>
         <AuthProvider>
           <CartProvider>
             <TopBar />

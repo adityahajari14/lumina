@@ -211,6 +211,11 @@ Make sure these are set for the blackout deployment:
 DATABASE_URL=
 NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN=
 NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN=
+NEXT_PUBLIC_SHOPIFY_SHOP_ID=
+NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID=
+NEXT_PUBLIC_SHOPIFY_ANALYTICS_CURRENCY=USD
+NEXT_PUBLIC_SHOPIFY_ANALYTICS_LANGUAGE=EN
+NEXT_PUBLIC_SHOPIFY_ANALYTICS_HAS_USER_CONSENT=true
 SHOPIFY_STORE_DOMAIN=
 SHOPIFY_ADMIN_ACCESS_TOKEN=
 APP_URL=
@@ -227,6 +232,9 @@ Notes:
 - `SHOPIFY_STORE_DOMAIN` stays the same because the Shopify store is shared
 - the Storefront token and customer account client credentials should come from the blackout Headless storefront setup
 - the Admin API token can stay the same because it belongs to the shared store
+- `NEXT_PUBLIC_SHOPIFY_SHOP_ID` can be either the numeric shop ID or `gid://shopify/Shop/<id>`
+- `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID` should be copied from the `Blackout Blinds` Headless storefront
+- keep `NEXT_PUBLIC_SHOPIFY_ANALYTICS_HAS_USER_CONSENT=true` only if your cookie/privacy setup permits analytics processing before an explicit opt-in
 
 ## Separate Database Guidance
 
@@ -261,6 +269,7 @@ Caution:
 14. Confirm the order in Shopify has tag `source:lumina`.
 15. Confirm the order appears in the `tag:source:lumina` saved view.
 16. Confirm the order does not get processed by the `Yournextblinds` blackout-filtered webhook path.
+17. Confirm Shopify Analytics starts showing visits for the `Blackout Blinds` headless storefront after production page views have been sent.
 
 ## Quick Verification
 
