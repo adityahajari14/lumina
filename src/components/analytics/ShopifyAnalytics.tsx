@@ -15,7 +15,6 @@ import { useEffect, useMemo, useRef } from "react";
 const shopDomain = normalizeDomain(process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN);
 const shopId = normalizeShopId(process.env.NEXT_PUBLIC_SHOPIFY_SHOP_ID);
 const storefrontId = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID;
-const storefrontToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN;
 const acceptedLanguage =
   (process.env.NEXT_PUBLIC_SHOPIFY_ANALYTICS_LANGUAGE || "EN") as ShopifyPageViewPayload["acceptedLanguage"];
 const currency =
@@ -56,8 +55,7 @@ export default function ShopifyAnalytics() {
   useShopifyCookies({
     hasUserConsent,
     checkoutDomain: shopDomain,
-    storefrontAccessToken: storefrontToken,
-    fetchTrackingValues: Boolean(shopDomain && storefrontToken),
+    fetchTrackingValues: false,
   });
 
   useEffect(() => {
@@ -76,6 +74,9 @@ export default function ShopifyAnalytics() {
       currency,
       acceptedLanguage,
       shopifySalesChannel: ShopifySalesChannel.headless,
+      analyticsAllowed: hasUserConsent,
+      marketingAllowed: false,
+      saleOfDataAllowed: false,
       canonicalUrl: window.location.href,
       pageType: getPageType(pathname),
     };
