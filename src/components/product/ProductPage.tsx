@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
 import ProductFeatures from "./ProductFeatures";
 import ProductWhyLumina from "./ProductWhyLumina";
+import { trackShopifyProductView } from "@/lib/shopify-analytics";
 import type { Product } from "@/types";
 
 interface ProductPageProps {
@@ -11,6 +13,10 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ product }: ProductPageProps) {
+  useEffect(() => {
+    trackShopifyProductView(product);
+  }, [product]);
+
   return (
     <div className="w-full flex flex-col">
       <div className="w-full min-h-screen bg-white pt-10 md:pt-15 pb-12 md:pb-20">
