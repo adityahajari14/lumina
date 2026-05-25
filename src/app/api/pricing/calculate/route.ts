@@ -23,6 +23,12 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (customizations !== undefined && !Array.isArray(customizations)) {
+      return NextResponse.json(
+        { success: false, error: { message: 'customizations must be an array when provided' } },
+        { status: 400 }
+      );
+    }
 
     const pricing = await pricingService.calculateProductPrice({
       handle,

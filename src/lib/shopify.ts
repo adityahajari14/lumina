@@ -16,6 +16,8 @@ const SHOPIFY_STORE_DOMAIN =
 const SHOPIFY_STOREFRONT_TOKEN =
   process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN || '';
 const SHOPIFY_API_VERSION = '2025-01';
+const SHOPIFY_CACHE_REVALIDATE_SECONDS =
+  Number(process.env.SHOPIFY_CACHE_REVALIDATE_SECONDS || 3_600);
 
 const STOREFRONT_URL = `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
@@ -228,7 +230,7 @@ async function storefrontFetch<T>(
 
   // Use Next.js ISR cache for server-side requests
   if (isServerSide) {
-    fetchOptions.next = { revalidate: 60 };
+    fetchOptions.next = { revalidate: SHOPIFY_CACHE_REVALIDATE_SECONDS };
   }
 
   const response = await fetch(STOREFRONT_URL, fetchOptions);
@@ -411,11 +413,11 @@ export async function fetchShopifyCollections(): Promise<
 
 /**
  * Fetch minimum prices (handle → price) from our backend pricing engine.
- * Cached for 60 seconds to avoid repeated calls.
+ * Cached in memory for 1 hour to avoid repeated calls.
  */
 let cachedMinimumPrices: Record<string, number> | null = null;
 let pricesCacheTime = 0;
-const PRICES_CACHE_TTL = 60_000; // 60 seconds
+const PRICES_CACHE_TTL = 3_600_000;
 
 function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') return '';

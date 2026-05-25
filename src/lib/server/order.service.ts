@@ -1,6 +1,7 @@
 import { calculateProductPrice, type PricingRequest } from './pricing.service';
 import { getAdminApiUrl, getAdminHeaders, validateShopifyConfig } from './shopify-admin';
 import { getCachedProduct } from './product-cache';
+import { BLACKOUT_PRODUCT_HANDLE } from '@/lib/product-routes';
 
 // ============================================
 // Types
@@ -191,6 +192,7 @@ async function getPrimaryVariantIdByHandle(handle: string): Promise<number | nul
 }
 
 const PRICE_TOLERANCE = 0.50;
+const REQUIRED_BLACKOUT_CONFIG_FIELDS = ['blindColor', 'frameColor', 'openingDirection'] as const;
 
 // ============================================
 // Service Functions
@@ -228,6 +230,20 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
     }
     if (typeof item.quantity !== 'number' || item.quantity < 1) {
       throw new CheckoutError('Each item must have a quantity >= 1', 400);
+    }
+    if (typeof item.submittedPrice !== 'number' || !Number.isFinite(item.submittedPrice) || item.submittedPrice < 0) {
+      throw new CheckoutError('Each item must have a valid submittedPrice', 400);
+    }
+    if (!item.configuration || typeof item.configuration !== 'object' || Array.isArray(item.configuration)) {
+      throw new CheckoutError('Each item must include a configuration object', 400);
+    }
+
+    if (item.handle === BLACKOUT_PRODUCT_HANDLE) {
+      for (const field of REQUIRED_BLACKOUT_CONFIG_FIELDS) {
+        if (!item.configuration[field]) {
+          throw new CheckoutError(`Missing required configuration: ${field}`, 400);
+        }
+      }
     }
 
     const cachedProduct = await getCachedProduct(item.handle);

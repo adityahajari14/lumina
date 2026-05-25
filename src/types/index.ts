@@ -166,9 +166,13 @@ export interface CartContextType {
   cart: Cart;
   addToCart: (product: Product, configuration: ProductConfiguration) => void;
   removeFromCart: (itemId: string) => void;
+  updateCartItemConfiguration: (
+    itemId: string,
+    configuration: ProductConfiguration,
+    productPrice: number
+  ) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
-  syncAccountCart: () => Promise<string | null>;
 }
 
 // ============================================

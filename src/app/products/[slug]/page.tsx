@@ -3,6 +3,8 @@ import { getBlackoutProduct } from "@/lib/blackout-product";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+export const revalidate = 3_600;
+
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
 };

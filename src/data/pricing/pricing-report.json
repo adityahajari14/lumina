@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-05-25T06:20:06.678Z",
+  "source": "blackout-blinds-db-export",
+  "checksum": "4dbd7bfb6e62d0e46567cf912bd8ed3f91e56a880cd4c24df80cd5b7c6cce709",
+  "counts": {
+    "priceBands": 1,
+    "widthBands": 14,
+    "heightBands": 8,
+    "priceCells": 112,
+    "customizationOptions": 60,
+    "customizationPricings": 54
+  },
+  "priceBandNames": [
+    "Eclipsecore Band"
+  ],
+  "validation": {
+    "errors": [],
+    "warnings": []
+  },
+  "shopifyValidated": false
+}

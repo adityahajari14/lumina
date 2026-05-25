@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import * as pricingService from '@/lib/server/pricing.service';
 
 export const maxDuration = 30;
+export const dynamic = 'force-static';
+export const revalidate = false;
 
 export async function GET() {
   try {

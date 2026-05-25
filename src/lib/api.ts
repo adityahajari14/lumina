@@ -7,6 +7,9 @@ import {
   PricingRequest,
 } from '@/types';
 
+const SERVER_API_CACHE_REVALIDATE_SECONDS =
+  Number(process.env.SERVER_API_CACHE_REVALIDATE_SECONDS || 3_600);
+
 function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') return '';
   const vercelUrl = process.env.VERCEL_URL;
@@ -17,10 +20,19 @@ function getApiBaseUrl(): string {
 
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const response = await fetch(`${getApiBaseUrl()}${normalizedEndpoint}`, {
+  const fetchOptions: RequestInit = {
     headers: { 'Content-Type': 'application/json' },
     ...options,
-  });
+  };
+
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+  if (typeof window === 'undefined' && method === 'GET') {
+    (fetchOptions as RequestInit & { next?: { revalidate: number } }).next = {
+      revalidate: SERVER_API_CACHE_REVALIDATE_SECONDS,
+    };
+  }
+
+  const response = await fetch(`${getApiBaseUrl()}${normalizedEndpoint}`, fetchOptions);
 
   if (!response.ok) {
     const errorText = await response.text();
