@@ -83,7 +83,7 @@ export default function MeasuringGuide() {
                   Enter your dimensions
                 </h3>
                 <p className="font-sans font-normal text-[#657186] text-[14px] leading-[22.75px]">
-                  At checkout, enter your exact width and drop in millimetres. We cut every blind precisely to your spec.
+                  At checkout, enter your chosen width and drop. We make every blind to your supplied measurements.
                 </p>
                 <p className="font-sans font-medium text-[#4051b5] text-[12px] leading-[16px] mt-1">
                   💡 We accept measurements in both cm and mm.
@@ -109,9 +109,9 @@ export default function MeasuringGuide() {
 
           {/* Precision Badge Overlay */}
           <div className="absolute top-6 right-0 lg:-right-8 bg-[#f9fafb] border border-[#dbe0e6] rounded-[16px] p-[21px] w-[150px] lg:w-[176px] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)] z-10 flex flex-col gap-1">
-            <span className="font-sans font-normal text-[#657186] text-[12px] leading-[16px]">Precision</span>
-            <span className="font-playfair font-semibold text-[#131720] text-[24px] leading-[32px]">&plusmn;1mm</span>
-            <span className="font-sans font-normal text-[#657186] text-[12px] leading-[16px]">cutting accuracy</span>
+            <span className="font-sans font-normal text-[#657186] text-[12px] leading-[16px]">Custom</span>
+            <span className="font-playfair font-semibold text-[#131720] text-[24px] leading-[32px]">Made</span>
+            <span className="font-sans font-normal text-[#657186] text-[12px] leading-[16px]">to measure</span>
           </div>
 
         </div>

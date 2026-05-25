@@ -131,6 +131,13 @@ const Footer = () => {
           >
             Shipping Policy
           </Link>
+          <span className="text-white/25">|</span>
+          <Link
+            href="/returns-refunds-policy"
+            className="font-sans text-white/50 hover:text-white transition-colors"
+          >
+            Returns &amp; Refunds
+          </Link>
         </div>
         <p className="font-sans text-[12px] leading-[16px] text-white/40 text-center">
           &copy; 2026 Lumina. All rights reserved.

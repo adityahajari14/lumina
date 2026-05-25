@@ -12,9 +12,10 @@ const sections = [
     content: (
       <p>
         Every Lumina blind is made to order, so your product enters production after your order is
-        confirmed. Manufacturing usually takes around 2-3 weeks before dispatch. Once your blind has
-        been completed and handed to the courier, we will send a shipping confirmation email with
-        tracking details.
+        confirmed. Unless a different estimate is shown on the product page or in your order
+        communications, orders are usually delivered within <strong>14-18 working days</strong>.
+        Once your blind has been completed and handed to the courier, we will send a shipping
+        confirmation email with tracking details.
       </p>
     ),
   },
@@ -22,8 +23,8 @@ const sections = [
     title: 'Shipping Times',
     content: (
       <p>
-        Lumina currently ships within the United States only. Delivery times begin once your order
-        has shipped, and most US orders arrive within 4-8 business days.
+        Lumina currently ships within the United States only. The 14-18 working day estimate includes
+        the time needed to make your blind, dispatch it, and deliver it to your address.
       </p>
     ),
   },

@@ -265,7 +265,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           </span>
         </div>
         <span className="font-sans text-[#657186] text-[14px]">
-          Sale price · incl. VAT · free shipping
+          Sale price · sales tax calculated at checkout · free shipping
         </span>
       </div>
 

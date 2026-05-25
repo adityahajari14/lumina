@@ -2,7 +2,7 @@ import Image from "next/image";
 const features = [
     {
       title: "Cut to Your Exact Size",
-      description: "Enter your dimensions and we cut every blind to the millimetre.",
+      description: "Enter your dimensions and we make every blind to fit your window.",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
           <path d="M21.3 15.3l-3.6-3.6"></path>

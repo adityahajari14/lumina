@@ -21,7 +21,7 @@ const features = [
   },
   {
     title: 'Cut to Size',
-    description: 'Enter your exact measurements and we cut every blind to the millimetre. Perfect fit guaranteed.',
+    description: 'Enter your measurements and we make every blind to fit your window.',
     icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M17.75 12.75C17.9365 12.9358 18.0844 13.1565 18.1854 13.3997C18.2863 13.6428 18.3383 13.9034 18.3383 14.1666C18.3383 14.4299 18.2863 14.6905 18.1854 14.9336C18.0844 15.1767 17.9365 15.3975 17.75 15.5833L15.5834 17.75C15.3975 17.9364 15.1768 18.0843 14.9337 18.1853C14.6906 18.2862 14.4299 18.3382 14.1667 18.3382C13.9035 18.3382 13.6428 18.2862 13.3997 18.1853C13.1566 18.0843 12.9358 17.9364 12.75 17.75L2.25002 7.24996C1.87548 6.8736 1.66522 6.36425 1.66522 5.83329C1.66522 5.30233 1.87548 4.79298 2.25002 4.41662L4.41668 2.24996C4.79304 1.87542 5.30239 1.66516 5.83335 1.66516C6.36431 1.66516 6.87367 1.87542 7.25002 2.24996L17.75 12.75Z" stroke="#131720" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>

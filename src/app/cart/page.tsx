@@ -694,7 +694,7 @@ export default function CartPage() {
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
                     <span className="text-[#131720] font-medium text-[18px]">Total</span>
-                    <span className="text-[#657186] text-[12px] mt-0.5">Including VAT</span>
+                    <span className="text-[#657186] text-[12px] mt-0.5">Sales tax calculated at checkout</span>
                   </div>
                   <span className="font-playfair text-[#131720] font-medium text-[28px]">
                     {formatPriceWithCurrency(total)}
