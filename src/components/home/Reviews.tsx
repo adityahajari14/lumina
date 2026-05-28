@@ -1,40 +1,40 @@
 
 const reviewsData = [
   {
-    name: 'Megan H.',
-    location: 'Leeds',
+    name: 'Emily R.',
+    location: 'Phoenix, AZ',
     product: 'Lumina · Anthracite · 100×150cm',
-    text: `"The blind arrived well packed and fitted the window neatly. It cuts the morning light down a lot, and the finish looks clean in the room."`,
+    text: `"The shade arrived well packaged and fit the window neatly. It cuts the Arizona morning sun down a lot, and the finish looks clean in our bedroom."`,
   },
   {
-    name: 'Daniel P.',
-    location: 'Bristol',
+    name: 'Mark T.',
+    location: 'New York, NY',
     product: 'Lumina · Cream · 80×120cm',
-    text: `"Installation was straightforward and the tension fit feels secure. We used it in a guest room and the difference in light control was immediate."`,
+    text: `"Installation was straightforward, and the tension fit feels secure. We used it in our guest room, and the difference in light control was immediate."`,
   },
   {
-    name: 'Priya S.',
-    location: 'London',
-    product: 'Lumina · White · Custom',
-    text: `"The custom size matched our recess well and the blind looks tidy once installed. It has made the bedroom noticeably darker at night."`,
-  },
-  {
-    name: 'Oliver J.',
-    location: 'Manchester',
+    name: 'Ryan K.',
+    location: 'Spring Valley, NV',
     product: 'Lumina · Anthracite · 120×180cm',
-    text: `"Good option for a rental because it does not need drilling. The blind feels solid, and the colour matched the product photos closely."`,
+    text: `"Great option for our rental because it did not require drilling. The shade feels solid, and the color matched the product photos closely."`,
   },
   {
-    name: 'Sophie L.',
-    location: 'Edinburgh',
+    name: 'Jessica M.',
+    location: 'Chicago, IL',
     product: 'Lumina · White · 60×90cm',
-    text: `"It sits neatly against the frame and looks minimal from the outside. The white finish is close to what I expected from the photos."`,
+    text: `"It sits neatly against the frame and looks minimal from the street. The white finish is exactly what I expected from the photos."`,
   },
   {
-    name: 'James C.',
-    location: 'Cardiff',
+    name: 'Amanda B.',
+    location: 'Glendale, AZ',
+    product: 'Lumina · White · Custom',
+    text: `"The custom size matched our window recess well, and the shade looks tidy once installed. It has made our bedroom noticeably darker at night."`,
+  },
+  {
+    name: 'Chris W.',
+    location: 'Boston, MA',
     product: 'Lumina · Cream · 140×200cm',
-    text: `"Delivery was quick and the blind was easy to set up. It gives us much better room darkening than the old roller blind we had before."`,
+    text: `"Delivery was quick, and the shade was easy to set up. It gives us much better room darkening than the old roller shade we had before."`,
   },
 ];
 
