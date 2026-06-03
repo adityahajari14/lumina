@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { getComparePriceData } from "@/lib/compare-price";
 import { fetchCustomizationPricing, fetchPriceMatrix, formatPriceWithCurrency, validateCartPrice } from "@/lib/api";
+import { SEEDED_PRODUCT_REVIEWS, getReviewSummary } from "@/data/reviews";
 import {
   BLIND_COLOR_OPTIONS,
   FRAME_COLOR_OPTIONS,
@@ -18,12 +19,48 @@ interface ProductInfoProps {
   product: Product;
 }
 
+const INITIAL_REVIEW_SUMMARY = getReviewSummary(SEEDED_PRODUCT_REVIEWS);
+
+interface ReviewsSummaryResponse {
+  success: boolean;
+  data?: {
+    averageRating: number;
+    reviewCount: number;
+  };
+}
+
+function ProductRatingStars({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5 text-[#b7791f]" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill={rating >= star - 0.25 ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 export default function ProductInfo({ product }: ProductInfoProps) {
   const { addToCart } = useCart();
   const [pricingLoaded, setPricingLoaded] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [priceMatrix, setPriceMatrix] = useState<PriceBandMatrix | null>(null);
   const [customizationPricing, setCustomizationPricing] = useState<CustomizationPricing[]>([]);
+  const [ratingSummary, setRatingSummary] = useState({
+    averageRating: product.rating ?? INITIAL_REVIEW_SUMMARY.averageRating,
+    reviewCount: product.reviewCount ?? INITIAL_REVIEW_SUMMARY.reviewCount,
+  });
   const [config, setConfig] = useState<ProductConfiguration>({
     ...DEFAULT_CONFIGURATION,
     width: 0,
@@ -64,6 +101,38 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       isMounted = false;
     };
   }, [product.slug]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const params = new URLSearchParams({
+      productId: product.id,
+      productHandle: product.slug,
+    });
+
+    const loadRatingSummary = async () => {
+      try {
+        const response = await fetch(`/api/reviews?${params}`, {
+          cache: "no-store",
+        });
+        const payload = (await response.json()) as ReviewsSummaryResponse;
+
+        if (!isMounted || !payload.success || !payload.data) return;
+
+        setRatingSummary({
+          averageRating: payload.data.averageRating,
+          reviewCount: payload.data.reviewCount,
+        });
+      } catch (error) {
+        console.error("Failed to load product rating summary:", error);
+      }
+    };
+
+    loadRatingSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product.id, product.slug]);
 
   const selectedCustomizations = useMemo(
     () =>
@@ -228,13 +297,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           {product.name}
         </h1>
         <div className="flex items-center text-sm gap-2">
-          <div className="flex gap-0.5 text-[#131720]">
-            {[...Array(5)].map((_, i) => (
-              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-            ))}
-          </div>
+          <ProductRatingStars rating={ratingSummary.averageRating} />
+          <span className="font-sans text-[13px] text-[#657186]">
+            {ratingSummary.averageRating.toFixed(1)} ({ratingSummary.reviewCount})
+          </span>
         </div>
       </div>
 

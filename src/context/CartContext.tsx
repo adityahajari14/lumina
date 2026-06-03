@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product, ProductConfiguration, Cart, CartItem, CartContextType } from '@/types';
+import { trackClarityAddToCart } from '@/lib/clarity';
 import { trackAddToCart } from '@/lib/meta-pixel';
 import { trackShopifyAddToCart } from '@/lib/shopify-analytics';
 
@@ -96,6 +97,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
     const updatedItems = [...cart.items, newItem];
     applyCartItems(updatedItems);
+    trackClarityAddToCart(product);
     trackAddToCart(product);
     trackShopifyAddToCart(product);
     router.push('/cart');

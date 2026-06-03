@@ -1,42 +1,5 @@
 
-const reviewsData = [
-  {
-    name: 'Emily R.',
-    location: 'Phoenix, AZ',
-    product: 'Lumina · Anthracite · 100×150cm',
-    text: `"The shade arrived well packaged and fit the window neatly. It cuts the Arizona morning sun down a lot, and the finish looks clean in our bedroom."`,
-  },
-  {
-    name: 'Mark T.',
-    location: 'New York, NY',
-    product: 'Lumina · Cream · 80×120cm',
-    text: `"Installation was straightforward, and the tension fit feels secure. We used it in our guest room, and the difference in light control was immediate."`,
-  },
-  {
-    name: 'Ryan K.',
-    location: 'Spring Valley, NV',
-    product: 'Lumina · Anthracite · 120×180cm',
-    text: `"Great option for our rental because it did not require drilling. The shade feels solid, and the color matched the product photos closely."`,
-  },
-  {
-    name: 'Jessica M.',
-    location: 'Chicago, IL',
-    product: 'Lumina · White · 60×90cm',
-    text: `"It sits neatly against the frame and looks minimal from the street. The white finish is exactly what I expected from the photos."`,
-  },
-  {
-    name: 'Amanda B.',
-    location: 'Glendale, AZ',
-    product: 'Lumina · White · Custom',
-    text: `"The custom size matched our window recess well, and the shade looks tidy once installed. It has made our bedroom noticeably darker at night."`,
-  },
-  {
-    name: 'Chris W.',
-    location: 'Boston, MA',
-    product: 'Lumina · Cream · 140×200cm',
-    text: `"Delivery was quick, and the shade was easy to set up. It gives us much better room darkening than the old roller shade we had before."`,
-  },
-];
+import { SEEDED_PRODUCT_REVIEWS } from "@/data/reviews";
 
 function StarIcon({ className }: { className?: string }) {
   return (
@@ -91,9 +54,9 @@ export default function Reviews() {
 
         {/* Reviews Grid */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {reviewsData.map((review, i) => (
+          {SEEDED_PRODUCT_REVIEWS.map((review) => (
             <div
-              key={i}
+              key={review.id}
               className="bg-[#eaedf0] rounded-2xl flex flex-col gap-4 items-start p-7 self-start h-full"
             >
               {/* Card stars */}
@@ -106,7 +69,7 @@ export default function Reviews() {
               {/* Card text */}
               <div className="flex-grow pb-2 w-full">
                 <p className="font-[family-name:var(--font-dm-sans)] font-normal text-[#131720] text-sm leading-[22.75px]">
-                  {review.text}
+                  &quot;{review.content}&quot;
                 </p>
               </div>
               
@@ -115,14 +78,14 @@ export default function Reviews() {
                 {/* Avatar */}
                 <div className="relative w-9 h-9 shrink-0 rounded-full overflow-hidden bg-[#dbe0e6] flex items-center justify-center">
                   <span className="font-[family-name:var(--font-playfair)] font-semibold text-[#131720] text-sm leading-none">
-                    {review.name.charAt(0)}
+                    {review.author.charAt(0)}
                   </span>
                 </div>
                 
                 {/* Info Text */}
                 <div className="flex flex-col gap-0.5 items-start">
                   <p className="font-[family-name:var(--font-dm-sans)] text-sm leading-5">
-                    <span className="font-medium text-[#131720]">{review.name} &middot; </span>
+                    <span className="font-medium text-[#131720]">{review.author} &middot; </span>
                     <span className="font-normal text-[#657186]">{review.location}</span>
                   </p>
                   <p className="font-[family-name:var(--font-dm-sans)] font-normal text-[#657186] text-xs leading-4">

@@ -14,6 +14,7 @@ import {
   validateCartPrice,
 } from "@/lib/api";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
+import { trackClarityInitiateCheckout } from "@/lib/clarity";
 import { trackInitiateCheckout } from "@/lib/meta-pixel";
 import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
 import {
@@ -468,6 +469,10 @@ export default function CartPage() {
     setIsCheckingOut(true);
     setCheckoutError(null);
 
+    const currency = cart.items[0]?.product.currency || "USD";
+    trackClarityInitiateCheckout(cart.items);
+    trackInitiateCheckout(cart.items, currency);
+
     try {
       const items: CheckoutItemRequest[] = cart.items.map((item) => ({
         handle: item.product.slug,
@@ -492,8 +497,6 @@ export default function CartPage() {
       }));
 
       const result = await createCheckout(items);
-      const currency = cart.items[0]?.product.currency || "USD";
-      trackInitiateCheckout(result, currency);
       window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
       clearCart();
       router.replace("/");

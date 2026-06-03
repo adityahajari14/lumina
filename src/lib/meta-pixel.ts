@@ -1,6 +1,16 @@
-import type { CheckoutResponse, Product } from "@/types";
+import type { CartItem, Product } from "@/types";
 
-type Fbq = (eventType: "track", eventName: string, parameters?: PixelPayload) => void;
+const META_PIXEL_ID = "963077733004633";
+
+type Fbq = {
+  (eventType: "track", eventName: string, parameters?: PixelPayload): void;
+  (eventType: "init", pixelId: string): void;
+  callMethod?: (...args: unknown[]) => void;
+  queue?: unknown[][];
+  push?: Fbq;
+  loaded?: boolean;
+  version?: string;
+};
 
 export type PixelContent = {
   id: string;
@@ -22,11 +32,51 @@ export type PixelPayload = {
 declare global {
   interface Window {
     fbq?: Fbq;
+    _fbq?: Fbq;
   }
 }
 
+function ensureMetaPixel() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  if (typeof window.fbq === "function") {
+    return true;
+  }
+
+  const fbq = function (...args: unknown[]) {
+    if (fbq.callMethod) {
+      fbq.callMethod(...args);
+      return;
+    }
+
+    fbq.queue = fbq.queue || [];
+    fbq.queue.push(args);
+  } as Fbq;
+
+  window.fbq = fbq;
+  window._fbq = window._fbq || fbq;
+  fbq.push = fbq;
+  fbq.loaded = true;
+  fbq.version = "2.0";
+  fbq.queue = [];
+
+  if (typeof document !== "undefined" && !document.getElementById("meta-pixel-sdk")) {
+    const script = document.createElement("script");
+    script.id = "meta-pixel-sdk";
+    script.async = true;
+    script.src = "https://connect.facebook.net/en_US/fbevents.js";
+    const firstScript = document.getElementsByTagName("script")[0];
+    firstScript.parentNode?.insertBefore(script, firstScript);
+  }
+
+  fbq("init", META_PIXEL_ID);
+  return true;
+}
+
 function trackMetaPixelEvent(eventName: string, payload: PixelPayload) {
-  if (typeof window === "undefined" || typeof window.fbq !== "function") {
+  if (!ensureMetaPixel() || typeof window.fbq !== "function") {
     return;
   }
 
@@ -51,27 +101,35 @@ function getProductPayload(product: Product, quantity: number = 1): PixelPayload
   };
 }
 
-function getCheckoutPayload(checkout: CheckoutResponse, currency: string): PixelPayload {
-  const contents = checkout.lineItems.map((item) => ({
-    id: item.handle,
+function getCheckoutPayload(items: CartItem[], currency: string): PixelPayload {
+  const contents = items.map((item) => ({
+    id: item.product.slug,
     quantity: item.quantity,
-    item_price: item.calculatedPrice,
+    item_price: item.product.price,
   }));
 
   return {
-    content_ids: checkout.lineItems.map((item) => item.handle),
+    content_ids: items.map((item) => item.product.slug),
     content_type: "product",
     contents,
     currency,
-    num_items: checkout.lineItems.reduce((sum, item) => sum + item.quantity, 0),
-    value: checkout.subtotal,
+    num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+    value: items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
   };
+}
+
+export function trackPageView() {
+  trackMetaPixelEvent("PageView", {});
+}
+
+export function trackViewContent(product: Product) {
+  trackMetaPixelEvent("ViewContent", getProductPayload(product));
 }
 
 export function trackAddToCart(product: Product, quantity: number = 1) {
   trackMetaPixelEvent("AddToCart", getProductPayload(product, quantity));
 }
 
-export function trackInitiateCheckout(checkout: CheckoutResponse, currency: string) {
-  trackMetaPixelEvent("InitiateCheckout", getCheckoutPayload(checkout, currency));
+export function trackInitiateCheckout(items: CartItem[], currency: string) {
+  trackMetaPixelEvent("InitiateCheckout", getCheckoutPayload(items, currency));
 }

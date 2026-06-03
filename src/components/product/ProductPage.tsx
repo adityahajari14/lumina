@@ -5,6 +5,9 @@ import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
 import ProductFeatures from "./ProductFeatures";
 import ProductWhyLumina from "./ProductWhyLumina";
+import ProductReviews from "./ProductReviews";
+import { trackClarityProductView } from "@/lib/clarity";
+import { trackViewContent } from "@/lib/meta-pixel";
 import { trackShopifyProductView } from "@/lib/shopify-analytics";
 import type { Product } from "@/types";
 
@@ -14,6 +17,8 @@ interface ProductPageProps {
 
 export default function ProductPage({ product }: ProductPageProps) {
   useEffect(() => {
+    trackClarityProductView(product);
+    trackViewContent(product);
     trackShopifyProductView(product);
   }, [product]);
 
@@ -40,6 +45,8 @@ export default function ProductPage({ product }: ProductPageProps) {
 
       {/* Why Lumina Section below */}
       <ProductWhyLumina />
+
+      <ProductReviews product={product} />
     </div>
   );
 }

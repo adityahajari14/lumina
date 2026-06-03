@@ -6,6 +6,7 @@ import "./globals.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import TopBar from "../components/layout/TopBar";
+import MetaPixelPageView from "@/components/analytics/MetaPixelPageView";
 import ShopifyAnalytics from "@/components/analytics/ShopifyAnalytics";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -57,7 +58,15 @@ export default function RootLayout({
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '963077733004633');
-            fbq('track', 'PageView');
+          `}
+        </Script>
+        <Script id="microsoft-clarity" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "x1bq3fh90s");
           `}
         </Script>
         <noscript>
@@ -70,6 +79,9 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+        <Suspense fallback={null}>
+          <MetaPixelPageView />
+        </Suspense>
         <Suspense fallback={null}>
           <ShopifyAnalytics />
         </Suspense>

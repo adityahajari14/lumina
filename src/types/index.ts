@@ -29,6 +29,8 @@ export interface ProductReview {
   title: string;
   content: string;
   verified: boolean;
+  location?: string;
+  product?: string;
 }
 
 export interface ProductAccordionItem {
