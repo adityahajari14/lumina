@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { SEEDED_PRODUCT_REVIEWS, getReviewSummary } from "@/data/reviews";
+import { getReviewSummary } from "@/data/reviews";
 import type { Product, ProductReview } from "@/types";
 
 interface ProductReviewsProps {
@@ -14,7 +14,7 @@ interface ReviewsApiResponse {
     reviews: ProductReview[];
     averageRating: number;
     reviewCount: number;
-    source: "judgeme" | "seeded";
+    source: "judgeme" | "seeded" | "demo";
     syncEnabled: boolean;
   };
   error?: {
@@ -22,7 +22,7 @@ interface ReviewsApiResponse {
   };
 }
 
-const INITIAL_SUMMARY = getReviewSummary(SEEDED_PRODUCT_REVIEWS);
+const INITIAL_SUMMARY = getReviewSummary([]);
 const REVIEWS_PER_PAGE = 4;
 
 function StarIcon({ filled = true, className = "" }: { filled?: boolean; className?: string }) {
@@ -64,8 +64,192 @@ function formatReviewDate(value: string) {
   }).format(date);
 }
 
+function ReviewMediaGallery({ review }: { review: ProductReview }) {
+  const media = review.media?.filter((item) => item.src).slice(0, 6) || [];
+
+  if (media.length === 0) return null;
+
+  return (
+    <div className="mt-4 grid max-w-[720px] grid-cols-2 gap-2 sm:grid-cols-3">
+      {media.map((item, index) => {
+        const alt = item.alt || `${review.author} review media ${index + 1}`;
+        const itemClassName =
+          "relative block aspect-square overflow-hidden rounded-[8px] border border-[#dbe0e6] bg-[#f0f2f2]";
+
+        if (item.type === "video") {
+          return (
+            <div key={`${item.src}-${index}`} className={itemClassName}>
+              <video
+                className="h-full w-full object-cover"
+                controls
+                preload="metadata"
+                poster={item.thumbnailSrc}
+              >
+                <source src={item.src} />
+              </video>
+            </div>
+          );
+        }
+
+        return (
+          <a
+            key={`${item.src}-${index}`}
+            href={item.src}
+            target="_blank"
+            rel="noreferrer"
+            className={`group ${itemClassName} focus:outline-none focus:ring-2 focus:ring-[#131720] focus:ring-offset-2`}
+            aria-label={`Open image from ${review.author}'s review`}
+          >
+            <img
+              src={item.src}
+              alt={alt}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            />
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+const STRIP_VISIBLE = 8;
+
+function ReviewMediaStrip({ reviews }: { reviews: ProductReview[] }) {
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const allImages = reviews.flatMap((r) =>
+    (r.media ?? []).filter((m) => m.type === "image" && m.src)
+  );
+
+  if (allImages.length === 0) return null;
+
+  const stripImages = allImages.slice(0, STRIP_VISIBLE);
+  const hasMore = allImages.length > STRIP_VISIBLE;
+  const remaining = allImages.length - STRIP_VISIBLE;
+
+  return (
+    <>
+      {/* Strip */}
+      <div className="flex gap-2">
+        {stripImages.map((img, i) => {
+          const isLast = i === STRIP_VISIBLE - 1 && hasMore;
+          return isLast ? (
+            <button
+              key={`more`}
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="relative shrink-0 w-22 h-22 overflow-hidden rounded-lg border border-[#dbe0e6] bg-[#131720] focus:outline-none focus:ring-2 focus:ring-[#131720] focus:ring-offset-1"
+              aria-label={`View all ${allImages.length} photos`}
+            >
+              <img
+                src={img.src}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover opacity-30"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+                <span className="font-sans text-[15px] font-semibold text-white leading-none">+{remaining}</span>
+                <span className="font-sans text-[10px] text-white/80 leading-none">more</span>
+              </div>
+            </button>
+          ) : (
+            <button
+              key={`${img.src}-${i}`}
+              type="button"
+              onClick={() => setLightboxSrc(img.src)}
+              className="group shrink-0 w-22 h-22 overflow-hidden rounded-lg border border-[#dbe0e6] bg-[#f0f2f2] focus:outline-none focus:ring-2 focus:ring-[#131720] focus:ring-offset-1"
+              aria-label={img.alt || `Review photo ${i + 1}`}
+            >
+              <img
+                src={img.src}
+                alt={img.alt || `Review photo ${i + 1}`}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.06]"
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* All-photos modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="relative mt-8 mb-8 w-full max-w-3xl rounded-xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-sans text-[16px] font-semibold text-[#131720]">
+                Customer photos ({allImages.length})
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                aria-label="Close"
+                className="text-[#657186] hover:text-[#131720] transition-colors"
+              >
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+              {allImages.map((img, i) => (
+                <button
+                  key={`modal-${img.src}-${i}`}
+                  type="button"
+                  onClick={() => { setShowModal(false); setLightboxSrc(img.src); }}
+                  className="group aspect-square overflow-hidden rounded-lg border border-[#dbe0e6] bg-[#f0f2f2] focus:outline-none focus:ring-2 focus:ring-[#131720] focus:ring-offset-1"
+                  aria-label={img.alt || `Review photo ${i + 1}`}
+                >
+                  <img
+                    src={img.src}
+                    alt={img.alt || `Review photo ${i + 1}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.06]"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single-image lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 text-white/80 hover:text-white"
+            onClick={() => setLightboxSrc(null)}
+            aria-label="Close"
+          >
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+            </svg>
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Review photo"
+            className="max-h-[90vh] max-w-full rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function ProductReviews({ product }: ProductReviewsProps) {
-  const [reviews, setReviews] = useState<ProductReview[]>(SEEDED_PRODUCT_REVIEWS);
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [averageRating, setAverageRating] = useState(INITIAL_SUMMARY.averageRating);
   const [reviewCount, setReviewCount] = useState(INITIAL_SUMMARY.reviewCount);
   const [syncEnabled, setSyncEnabled] = useState(false);
@@ -373,6 +557,8 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
             </form>
           )}
 
+          <ReviewMediaStrip reviews={reviews} />
+
           <div className="divide-y divide-[#eaedf0]">
             {visibleReviews.map((review) => (
               <article key={review.id} className="py-6 first:pt-0">
@@ -382,7 +568,14 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
                       {review.author.charAt(0)}
                     </span>
                   </div>
-                  <p className="font-sans text-[13px] text-[#131720]">{review.author}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-sans text-[13px] text-[#131720]">{review.author}</p>
+                    {review.isDemo && (
+                      <span className="rounded-full border border-[#dbe0e6] bg-[#f9fafb] px-2 py-0.5 font-sans text-[11px] font-medium text-[#657186]">
+                        Demo
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
@@ -399,6 +592,8 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
                 <p className="mt-3 max-w-[720px] font-sans text-[14px] leading-6 text-[#384152]">
                   {review.content}
                 </p>
+
+                <ReviewMediaGallery review={review} />
               </article>
             ))}
           </div>

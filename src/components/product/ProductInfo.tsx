@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { getComparePriceData } from "@/lib/compare-price";
 import { fetchCustomizationPricing, fetchPriceMatrix, formatPriceWithCurrency, validateCartPrice } from "@/lib/api";
-import { SEEDED_PRODUCT_REVIEWS, getReviewSummary } from "@/data/reviews";
+import { getReviewSummary } from "@/data/reviews";
 import {
   BLIND_COLOR_OPTIONS,
   FRAME_COLOR_OPTIONS,
@@ -19,7 +19,7 @@ interface ProductInfoProps {
   product: Product;
 }
 
-const INITIAL_REVIEW_SUMMARY = getReviewSummary(SEEDED_PRODUCT_REVIEWS);
+const INITIAL_REVIEW_SUMMARY = getReviewSummary([]);
 
 interface ReviewsSummaryResponse {
   success: boolean;

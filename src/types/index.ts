@@ -31,6 +31,15 @@ export interface ProductReview {
   verified: boolean;
   location?: string;
   product?: string;
+  media?: ProductReviewMedia[];
+  isDemo?: boolean;
+}
+
+export interface ProductReviewMedia {
+  type: 'image' | 'video';
+  src: string;
+  alt?: string;
+  thumbnailSrc?: string;
 }
 
 export interface ProductAccordionItem {

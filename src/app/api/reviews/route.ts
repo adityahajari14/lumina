@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { SEEDED_PRODUCT_REVIEWS, getReviewSummary } from "@/data/reviews";
+import { getReviewSummary } from "@/data/reviews";
 import {
   createJudgeMeReview,
   fetchJudgeMeReviews,
@@ -19,7 +19,7 @@ interface ReviewsResponse {
   reviews: ProductReview[];
   averageRating: number;
   reviewCount: number;
-  source: "judgeme" | "seeded";
+  source: "judgeme" | "seeded" | "demo";
   syncEnabled: boolean;
 }
 
@@ -69,22 +69,18 @@ export async function GET(request: Request) {
 
   try {
     const judgeMeReviews = await fetchJudgeMeReviews(product);
-    const reviews =
-      judgeMeReviews && judgeMeReviews.length > 0
-        ? judgeMeReviews
-        : SEEDED_PRODUCT_REVIEWS;
-    const source = judgeMeReviews && judgeMeReviews.length > 0 ? "judgeme" : "seeded";
+    const reviews = judgeMeReviews ?? [];
 
     return NextResponse.json<ApiResponse<ReviewsResponse>>({
       success: true,
-      data: buildReviewsResponse(reviews, source),
+      data: buildReviewsResponse(reviews, "judgeme"),
     });
   } catch (error) {
     console.error("[ProductReviewsFetch]", error);
 
     return NextResponse.json<ApiResponse<ReviewsResponse>>({
       success: true,
-      data: buildReviewsResponse(SEEDED_PRODUCT_REVIEWS, "seeded"),
+      data: buildReviewsResponse([], "judgeme"),
     });
   }
 }

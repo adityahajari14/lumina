@@ -1,4 +1,4 @@
-import type { ProductReview } from "@/types";
+import type { ProductReview, ProductReviewMedia } from "@/types";
 
 const JUDGEME_API_BASE_URL = "https://judge.me/api/v1";
 
@@ -44,6 +44,10 @@ interface JudgeMeReview {
   product_handle?: unknown;
   product_title?: unknown;
   product?: JudgeMeProduct;
+  pictures?: unknown;
+  picture_urls?: unknown;
+  videos?: unknown;
+  video_urls?: unknown;
 }
 
 interface JudgeMeReviewsResponse {
@@ -90,6 +94,146 @@ function normalizeNumber(value: unknown, fallback: number) {
   return Number.isFinite(numberValue) ? numberValue : fallback;
 }
 
+function isSafeMediaUrl(value: string) {
+  return /^https?:\/\//.test(value) || value.startsWith("/");
+}
+
+function getObjectValue(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+
+  return "";
+}
+
+function getNestedObjectValue(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key];
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const nestedValue = getObjectValue(value as Record<string, unknown>, [
+        "original",
+        "original_url",
+        "large",
+        "large_url",
+        "medium",
+        "medium_url",
+        "small",
+        "small_url",
+        "url",
+        "src",
+      ]);
+
+      if (nestedValue) return nestedValue;
+    }
+  }
+
+  return "";
+}
+
+function inferMediaType(url: string, fallback: ProductReviewMedia["type"]) {
+  return /\.(mp4|m4v|mov|webm)(\?|#|$)/i.test(url) ? "video" : fallback;
+}
+
+function normalizeMediaItem(
+  item: unknown,
+  fallbackType: ProductReviewMedia["type"],
+  alt: string
+): ProductReviewMedia | null {
+  if (typeof item === "string") {
+    const src = item.trim();
+    if (!src || !isSafeMediaUrl(src)) return null;
+
+    return {
+      type: inferMediaType(src, fallbackType),
+      src,
+      alt,
+    };
+  }
+
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+
+  const record = item as Record<string, unknown>;
+  const hidden =
+    record.hidden === true ||
+    record.is_hidden === true ||
+    record.published === false ||
+    record.is_published === false;
+
+  if (hidden) return null;
+
+  const src =
+    getObjectValue(record, [
+      "url",
+      "src",
+      "original",
+      "original_url",
+      "large_url",
+      "medium_url",
+      "small_url",
+    ]) || getNestedObjectValue(record, ["urls", "image", "picture", "video"]);
+
+  if (!src || !isSafeMediaUrl(src)) return null;
+
+  const thumbnailSrc =
+    getObjectValue(record, [
+      "thumbnail",
+      "thumbnail_url",
+      "preview",
+      "preview_url",
+      "poster",
+      "poster_url",
+    ]) || getNestedObjectValue(record, ["thumbnails", "preview", "poster"]);
+
+  const explicitType = normalizeString(record.type).toLowerCase();
+  const type =
+    explicitType === "video" || explicitType === "image"
+      ? explicitType
+      : inferMediaType(src, fallbackType);
+
+  return {
+    type,
+    src,
+    alt: normalizeString(record.alt) || normalizeString(record.alt_text) || alt,
+    thumbnailSrc: thumbnailSrc && isSafeMediaUrl(thumbnailSrc) ? thumbnailSrc : undefined,
+  };
+}
+
+function normalizeMediaCollection(
+  value: unknown,
+  fallbackType: ProductReviewMedia["type"],
+  alt: string
+) {
+  const collection = Array.isArray(value)
+    ? value
+    : typeof value === "string" && value.includes(",")
+      ? value.split(",")
+      : value
+        ? [value]
+        : [];
+
+  return collection
+    .map((item) => normalizeMediaItem(item, fallbackType, alt))
+    .filter((item): item is ProductReviewMedia => Boolean(item));
+}
+
+function normalizeReviewMedia(review: JudgeMeReview, alt: string) {
+  const media = [
+    ...normalizeMediaCollection(review.pictures, "image", alt),
+    ...normalizeMediaCollection(review.picture_urls, "image", alt),
+    ...normalizeMediaCollection(review.videos, "video", alt),
+    ...normalizeMediaCollection(review.video_urls, "video", alt),
+  ];
+
+  const uniqueSources = new Set<string>();
+
+  return media.filter((item) => {
+    if (uniqueSources.has(item.src)) return false;
+    uniqueSources.add(item.src);
+    return true;
+  });
+}
+
 function valueMatches(expected: string, value: unknown) {
   if (!expected) return false;
   return String(value || "") === expected;
@@ -128,6 +272,7 @@ function normalizeReview(review: JudgeMeReview, index: number): ProductReview {
       normalizeString(review.product_title) ||
       normalizeString(review.product?.title) ||
       undefined,
+    media: normalizeReviewMedia(review, `${author}'s review media`),
   };
 }
 
@@ -149,18 +294,28 @@ export async function fetchJudgeMeReviews(product: JudgeMeProductRef) {
   const config = getJudgeMeConfig();
   if (!config.apiToken || !config.shopDomain) return null;
 
-  const params = new URLSearchParams({
-    api_token: config.apiToken,
-    shop_domain: normalizeDomain(config.shopDomain),
-    per_page: "100",
-    page: "1",
-    published: "true",
-  });
+  const allReviews: JudgeMeReview[] = [];
+  let page = 1;
 
-  const data = await judgeMeFetch<JudgeMeReviewsResponse>(`/reviews?${params}`);
-  const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+  while (true) {
+    const params = new URLSearchParams({
+      api_token: config.apiToken,
+      shop_domain: normalizeDomain(config.shopDomain),
+      per_page: "100",
+      page: String(page),
+      published: "true",
+    });
 
-  return reviews
+    const data = await judgeMeFetch<JudgeMeReviewsResponse>(`/reviews?${params}`);
+    const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+
+    if (reviews.length === 0) break;
+    allReviews.push(...reviews);
+    if (reviews.length < 100) break;
+    page++;
+  }
+
+  return allReviews
     .filter((review) => reviewMatchesProduct(review, product))
     .map((review, index) => normalizeReview(review, index))
     .filter((review) => review.content);
