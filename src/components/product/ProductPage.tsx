@@ -9,13 +9,14 @@ import ProductReviews from "./ProductReviews";
 import { trackClarityProductView } from "@/lib/clarity";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { trackShopifyProductView } from "@/lib/shopify-analytics";
-import type { Product } from "@/types";
+import type { Product, ProductReviewsData } from "@/types";
 
 interface ProductPageProps {
   product: Product;
+  initialReviewsData: ProductReviewsData;
 }
 
-export default function ProductPage({ product }: ProductPageProps) {
+export default function ProductPage({ product, initialReviewsData }: ProductPageProps) {
   useEffect(() => {
     trackClarityProductView(product);
     trackViewContent(product);
@@ -35,7 +36,7 @@ export default function ProductPage({ product }: ProductPageProps) {
 
         {/* Right Side - Product Info */}
         <div className="w-full pt-2">
-          <ProductInfo product={product} />
+          <ProductInfo product={product} initialReviewsData={initialReviewsData} />
         </div>
       </div>
       </div>
@@ -46,7 +47,7 @@ export default function ProductPage({ product }: ProductPageProps) {
       {/* Why Lumina Section below */}
       <ProductWhyLumina />
 
-      <ProductReviews product={product} />
+      <ProductReviews product={product} initialReviewsData={initialReviewsData} />
     </div>
   );
 }

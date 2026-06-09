@@ -12,11 +12,18 @@ import {
   FRAME_COLOR_OPTIONS,
   OPENING_DIRECTION_OPTIONS,
 } from "@/data/customizations";
-import type { CustomizationPricing, PriceBandMatrix, Product, ProductConfiguration } from "@/types";
+import type {
+  CustomizationPricing,
+  PriceBandMatrix,
+  Product,
+  ProductConfiguration,
+  ProductReviewsData,
+} from "@/types";
 import { DEFAULT_CONFIGURATION } from "@/types";
 
 interface ProductInfoProps {
   product: Product;
+  initialReviewsData?: ProductReviewsData;
 }
 
 const INITIAL_REVIEW_SUMMARY = getReviewSummary([]);
@@ -51,15 +58,17 @@ function ProductRatingStars({ rating }: { rating: number }) {
   );
 }
 
-export default function ProductInfo({ product }: ProductInfoProps) {
+export default function ProductInfo({ product, initialReviewsData }: ProductInfoProps) {
   const { addToCart } = useCart();
   const [pricingLoaded, setPricingLoaded] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [priceMatrix, setPriceMatrix] = useState<PriceBandMatrix | null>(null);
   const [customizationPricing, setCustomizationPricing] = useState<CustomizationPricing[]>([]);
   const [ratingSummary, setRatingSummary] = useState({
-    averageRating: product.rating ?? INITIAL_REVIEW_SUMMARY.averageRating,
-    reviewCount: product.reviewCount ?? INITIAL_REVIEW_SUMMARY.reviewCount,
+    averageRating:
+      initialReviewsData?.averageRating ?? product.rating ?? INITIAL_REVIEW_SUMMARY.averageRating,
+    reviewCount:
+      initialReviewsData?.reviewCount ?? product.reviewCount ?? INITIAL_REVIEW_SUMMARY.reviewCount,
   });
   const [config, setConfig] = useState<ProductConfiguration>({
     ...DEFAULT_CONFIGURATION,
@@ -103,6 +112,14 @@ export default function ProductInfo({ product }: ProductInfoProps) {
   }, [product.slug]);
 
   useEffect(() => {
+    if (initialReviewsData) {
+      setRatingSummary({
+        averageRating: initialReviewsData.averageRating,
+        reviewCount: initialReviewsData.reviewCount,
+      });
+      return;
+    }
+
     let isMounted = true;
     const params = new URLSearchParams({
       productId: product.id,
@@ -132,7 +149,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     return () => {
       isMounted = false;
     };
-  }, [product.id, product.slug]);
+  }, [initialReviewsData, product.id, product.slug]);
 
   const selectedCustomizations = useMemo(
     () =>
@@ -293,29 +310,19 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     <div className="flex flex-col gap-6 w-full max-w-[600px] pb-16">
       {/* Header Info */}
       <div className="flex flex-col gap-2">
-        <h1 className="font-playfair font-medium text-[#131720] text-4xl lg:text-[48px] leading-tight">
+        <h1 className="font-playfair font-medium text-[#131720] text-[32px] leading-tight lg:text-[40px]">
           {product.name}
         </h1>
+        {product.descriptionHtml && product.descriptionHtml !== product.name ? (
+          <div
+            className="max-w-[560px] font-sans text-[15px] leading-6 text-[#657186] [&_li]:mb-1 [&_li]:pl-1 [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:ml-5 [&_ul]:list-disc [&_ul]:space-y-1"
+            dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+          />
+        ) : null}
         <div className="flex items-center text-sm gap-2">
           <ProductRatingStars rating={ratingSummary.averageRating} />
           <span className="font-sans text-[13px] text-[#657186]">
             {ratingSummary.averageRating.toFixed(1)} ({ratingSummary.reviewCount})
-          </span>
-        </div>
-      </div>
-
-      {/* Delivery */}
-      <div className="bg-[#eaedf0] rounded-xl flex items-center gap-3 py-4 px-4 w-full">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
-          <rect x="3" y="8" width="18" height="10" rx="2"></rect>
-          <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"></path>
-          <circle cx="8" cy="18" r="2"></circle>
-          <circle cx="16" cy="18" r="2"></circle>
-        </svg>
-        <div className="flex flex-col text-sm">
-          <span className="font-sans text-[#657186]">Estimated Delivery</span>
-          <span className="font-sans font-semibold text-[#131720]">
-            {product.estimatedDelivery || "14-18 Working Days"}
           </span>
         </div>
       </div>
@@ -503,8 +510,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
           </div>
-          <span className="font-semibold text-xs text-[#131720]">4.9 / 5 Stars</span>
-          <span className="text-xs text-[#657186]">Rated Excellent — 2,400+ reviews</span>
+          <span className="font-semibold text-xs text-[#131720]">4.8 / 5 Stars</span>
+          <span className="text-xs text-[#657186]">Rated Excellent — 750+ reviews</span>
         </div>
       </div>
 

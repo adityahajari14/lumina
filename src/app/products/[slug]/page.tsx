@@ -1,9 +1,10 @@
 import ProductPage from "@/components/product/ProductPage";
 import { getBlackoutProduct } from "@/lib/blackout-product";
+import { getProductReviewsData } from "@/lib/server/product-reviews";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export const revalidate = 3_600;
+export const dynamic = "force-dynamic";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -37,6 +38,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function Page({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductForSlug(slug);
+  const initialReviewsData = await getProductReviewsData(product);
 
-  return <ProductPage product={product} />;
+  return <ProductPage product={product} initialReviewsData={initialReviewsData} />;
 }

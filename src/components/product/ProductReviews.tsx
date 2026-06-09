@@ -2,10 +2,13 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { getReviewSummary } from "@/data/reviews";
-import type { Product, ProductReview } from "@/types";
+import type { Product, ProductReview, ProductReviewsData } from "@/types";
 
 interface ProductReviewsProps {
   product: Product;
+  initialReviewsData?: ProductReviewsData;
+  sectionId?: string;
+  showWriteReview?: boolean;
 }
 
 interface ReviewsApiResponse {
@@ -14,7 +17,7 @@ interface ReviewsApiResponse {
     reviews: ProductReview[];
     averageRating: number;
     reviewCount: number;
-    source: "judgeme" | "seeded" | "demo";
+    source: ProductReviewsData["source"];
     syncEnabled: boolean;
   };
   error?: {
@@ -248,11 +251,20 @@ function ReviewMediaStrip({ reviews }: { reviews: ProductReview[] }) {
   );
 }
 
-export default function ProductReviews({ product }: ProductReviewsProps) {
-  const [reviews, setReviews] = useState<ProductReview[]>([]);
-  const [averageRating, setAverageRating] = useState(INITIAL_SUMMARY.averageRating);
-  const [reviewCount, setReviewCount] = useState(INITIAL_SUMMARY.reviewCount);
-  const [syncEnabled, setSyncEnabled] = useState(false);
+export default function ProductReviews({
+  product,
+  initialReviewsData,
+  sectionId = "product-reviews",
+  showWriteReview = true,
+}: ProductReviewsProps) {
+  const [reviews, setReviews] = useState<ProductReview[]>(initialReviewsData?.reviews ?? []);
+  const [averageRating, setAverageRating] = useState(
+    initialReviewsData?.averageRating ?? INITIAL_SUMMARY.averageRating
+  );
+  const [reviewCount, setReviewCount] = useState(
+    initialReviewsData?.reviewCount ?? INITIAL_SUMMARY.reviewCount
+  );
+  const [syncEnabled, setSyncEnabled] = useState(initialReviewsData?.syncEnabled ?? false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -268,6 +280,14 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
   });
 
   useEffect(() => {
+    if (initialReviewsData) {
+      setReviews(initialReviewsData.reviews);
+      setAverageRating(initialReviewsData.averageRating);
+      setReviewCount(initialReviewsData.reviewCount);
+      setSyncEnabled(initialReviewsData.syncEnabled);
+      return;
+    }
+
     let isMounted = true;
     const params = new URLSearchParams({
       productId: product.id,
@@ -297,7 +317,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
     return () => {
       isMounted = false;
     };
-  }, [product.id, product.slug]);
+  }, [initialReviewsData, product.id, product.slug]);
 
   const ratingBreakdown = useMemo(
     () =>
@@ -362,7 +382,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
   };
 
   return (
-    <section id="product-reviews" className="w-full bg-white px-4 py-14 md:px-8 md:py-20">
+    <section id={sectionId} className="w-full bg-white px-4 py-14 md:px-8 md:py-20">
       <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-10 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-14">
         <aside className="flex flex-col gap-7 lg:sticky lg:top-28 lg:self-start">
           <div className="flex flex-col gap-3">
@@ -404,24 +424,28 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
                   Customer reviews
                 </h3>
                 <p className="mt-1 font-sans text-[13px] text-[#657186]">
-                  Read feedback from customers and share your own experience.
+                  {showWriteReview
+                    ? "Read feedback from customers and share your own experience."
+                    : "Read feedback from customers."}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowReviewForm(true);
-                  setSubmitError(null);
-                  setSubmitMessage(null);
-                }}
-                className="w-full cursor-pointer rounded-full bg-[#131720] px-5 py-2.5 font-sans text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-black sm:w-auto"
-              >
-                Write a review
-              </button>
+              {showWriteReview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReviewForm(true);
+                    setSubmitError(null);
+                    setSubmitMessage(null);
+                  }}
+                  className="w-full cursor-pointer rounded-full bg-[#131720] px-5 py-2.5 font-sans text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-black sm:w-auto"
+                >
+                  Write a review
+                </button>
+              )}
             </div>
           </div>
 
-          {showReviewForm && (
+          {showWriteReview && showReviewForm && (
             <form className="flex flex-col gap-4 rounded-[8px] border border-[#dbe0e6] bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
               <div className="border-b border-[#eaedf0] pb-4">
                 <h4 className="font-sans text-[16px] font-semibold text-[#131720]">

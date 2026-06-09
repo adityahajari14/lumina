@@ -42,6 +42,14 @@ export interface ProductReviewMedia {
   thumbnailSrc?: string;
 }
 
+export interface ProductReviewsData {
+  reviews: ProductReview[];
+  averageRating: number;
+  reviewCount: number;
+  source: 'judgeme' | 'seeded' | 'demo';
+  syncEnabled: boolean;
+}
+
 export interface ProductAccordionItem {
   title: string;
   content: string;

@@ -66,7 +66,7 @@ export default function OurStory() {
               spent three years building something better.
             </p>
             <p>
-              Today, our blinds are trusted in over 40,000 homes — Every blind is made
+              Today, our blinds are trusted in over 750 homes — Every blind is made
               to your exact measurements, is delivered within 14-18 working days, and installs without a
               single drill hole.
             </p>
@@ -89,7 +89,7 @@ export default function OurStory() {
             
             <div className="flex flex-col gap-0.5">
               <span className="font-playfair font-semibold text-[#131720] text-2xl lg:text-[30px] leading-none lg:leading-[36px]">
-                40,000+
+                750+
               </span>
               <span className="font-sans font-normal text-[#657186] text-[14px] leading-[20px]">
                 Homes across USA
@@ -98,7 +98,7 @@ export default function OurStory() {
 
             <div className="flex flex-col gap-0.5">
               <span className="font-playfair font-semibold text-[#131720] text-2xl lg:text-[30px] leading-none lg:leading-[36px]">
-                4.9 / 5
+                4.8 / 5
               </span>
               <span className="font-sans font-normal text-[#657186] text-[14px] leading-[20px]">
                 Average review score
@@ -116,7 +116,7 @@ export default function OurStory() {
 
             <div className="flex flex-col gap-0.5">
               <span className="font-playfair font-semibold text-[#131720] text-2xl lg:text-[30px] leading-none lg:leading-[36px]">
-                3 min
+                5 min
               </span>
               <span className="font-sans font-normal text-[#657186] text-[14px] leading-[20px]">
                 Average install time

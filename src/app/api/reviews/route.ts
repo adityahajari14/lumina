@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getReviewSummary } from "@/data/reviews";
+import { buildProductReviewsData } from "@/lib/server/product-reviews";
 import {
   createJudgeMeReview,
   fetchJudgeMeReviews,
-  isJudgeMeConfigured,
+  isJudgeMeConfigured
 } from "@/lib/server/judgeme";
-import type { ProductReview } from "@/types";
+import type { ProductReview, ProductReviewsData } from "@/types";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -13,14 +13,6 @@ interface ApiResponse<T> {
   error?: {
     message: string;
   };
-}
-
-interface ReviewsResponse {
-  reviews: ProductReview[];
-  averageRating: number;
-  reviewCount: number;
-  source: "judgeme" | "seeded" | "demo";
-  syncEnabled: boolean;
 }
 
 interface ReviewSubmissionBody {
@@ -51,17 +43,9 @@ function getProductRefFromRequest(request: Request) {
 
 function buildReviewsResponse(
   reviews: ProductReview[],
-  source: ReviewsResponse["source"]
-): ReviewsResponse {
-  const summary = getReviewSummary(reviews);
-
-  return {
-    reviews,
-    averageRating: summary.averageRating,
-    reviewCount: summary.reviewCount,
-    source,
-    syncEnabled: isJudgeMeConfigured(),
-  };
+  source: ProductReviewsData["source"]
+): ProductReviewsData {
+  return buildProductReviewsData(reviews, source);
 }
 
 export async function GET(request: Request) {
@@ -71,14 +55,14 @@ export async function GET(request: Request) {
     const judgeMeReviews = await fetchJudgeMeReviews(product);
     const reviews = judgeMeReviews ?? [];
 
-    return NextResponse.json<ApiResponse<ReviewsResponse>>({
+    return NextResponse.json<ApiResponse<ProductReviewsData>>({
       success: true,
       data: buildReviewsResponse(reviews, "judgeme"),
     });
   } catch (error) {
     console.error("[ProductReviewsFetch]", error);
 
-    return NextResponse.json<ApiResponse<ReviewsResponse>>({
+    return NextResponse.json<ApiResponse<ProductReviewsData>>({
       success: true,
       data: buildReviewsResponse([], "judgeme"),
     });

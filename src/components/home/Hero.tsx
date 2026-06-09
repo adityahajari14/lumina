@@ -23,7 +23,7 @@ export default function Hero() {
 
         {/* Mobile Header (Hidden on Desktop) */}
         <div className="flex flex-col items-start gap-6 max-w-[576px] w-full lg:hidden order-1">
-          {/* Badge: Rated 4.9 */}
+          {/* Badge: Rated 4.8 */}
           <div className="bg-[#4051b5]/10 rounded-full py-1.5 px-3 flex items-center gap-2">
             <div className="flex gap-0.5 text-[#4051b5]">
               {[...Array(5)].map((_, i) => (
@@ -33,7 +33,7 @@ export default function Hero() {
               ))}
             </div>
             <span className="text-[#4051b5] font-sans font-medium text-xs">     
-              Rated 4.9 by 2,400+ customers
+              Rated 4.8 by 750+ customers
             </span>
           </div>
 
@@ -47,7 +47,7 @@ export default function Hero() {
 
         {/* Left Column */}
         <div className="flex flex-col items-start gap-6 max-w-[576px] order-3 lg:order-1">
-          {/* Badge: Rated 4.9 - Desktop */}
+          {/* Badge: Rated 4.8 - Desktop */}
           <div className="hidden lg:flex bg-[#4051b5]/10 rounded-full py-1.5 px-3 items-center gap-2">
             <div className="flex gap-0.5 text-[#4051b5]">
               {[...Array(5)].map((_, i) => (
@@ -57,7 +57,7 @@ export default function Hero() {
               ))}
             </div>
             <span className="text-[#4051b5] font-sans font-medium text-xs">     
-              Rated 4.9 by 2,400+ customers
+              Rated 4.8 by 750+ customers
             </span>
           </div>
 
@@ -100,7 +100,7 @@ export default function Hero() {
               <span className="font-sans text-[#657186] text-xs">Size Options</span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="font-playfair font-semibold text-[#131720] text-2xl leading-none">3 min</span>
+              <span className="font-playfair font-semibold text-[#131720] text-2xl leading-none">5 min</span>
               <span className="font-sans text-[#657186] text-xs">Avg Install Time</span>
             </div>
           </div>
