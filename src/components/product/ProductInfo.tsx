@@ -21,6 +21,8 @@ import type {
 } from "@/types";
 import { DEFAULT_CONFIGURATION } from "@/types";
 
+const PROMO_CODE = "FINAL10";
+
 interface ProductInfoProps {
   product: Product;
   initialReviewsData?: ProductReviewsData;
@@ -191,7 +193,19 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     selectedCustomizations,
   ]);
 
-  const comparePrice = useMemo(() => getComparePriceData(totalPrice).compareAtPrice, [totalPrice]);
+  const { compareAtPrice: comparePrice, upliftPercent } = useMemo(() => getComparePriceData(totalPrice), [totalPrice]);
+  const savings = useMemo(() => Math.round(comparePrice - totalPrice), [comparePrice, totalPrice]);
+  const [promoCopied, setPromoCopied] = useState(false);
+
+  const handlePromoCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(PROMO_CODE);
+      setPromoCopied(true);
+      window.setTimeout(() => setPromoCopied(false), 1800);
+    } catch {
+      // ignore
+    }
+  };
 
   const sizeRanges = useMemo(() => {
     if (!priceMatrix || priceMatrix.widthBands.length === 0 || priceMatrix.heightBands.length === 0) {
@@ -328,7 +342,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       </div>
 
       {/* Price */}
-      <div className="flex flex-col gap-2 pt-2">
+      <div className="flex flex-col gap-3 pt-2">
         <div className="flex items-end gap-3 flex-wrap">
           <span className="font-playfair font-medium text-[36px] text-[#131720] leading-none">
             {formatPriceWithCurrency(totalPrice, product.currency)}
@@ -336,10 +350,65 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           <span className="font-sans text-[18px] text-[#8c95a4] leading-none line-through pb-1">
             {formatPriceWithCurrency(comparePrice, product.currency)}
           </span>
+          <span className="inline-flex items-center rounded-full bg-[#131720] px-2.5 py-1 text-[12px] font-semibold text-white leading-none mb-1">
+            {upliftPercent}% off
+          </span>
         </div>
-        <span className="font-sans text-[#657186] text-[14px]">
-          Sale price · sales tax calculated at checkout · free shipping
-        </span>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="font-sans text-[#657186] text-[13px]">
+            Sale price · free shipping
+          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-800" />
+            </span>
+            <span className="font-sans text-[12px] font-medium text-red-600">Offer ends today</span>
+          </div>
+        </div>
+
+        {/* Sale offer block */}
+        <div className="rounded-xl border border-[#131720] overflow-hidden">
+          {/* Savings row */}
+          <div className="flex items-center justify-between gap-4 bg-[#131720] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span className="font-sans text-[13px] text-white/80">
+                You save <span className="font-semibold text-white">{formatPriceWithCurrency(savings, product.currency)}</span> on this order
+              </span>
+            </div>
+            <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 font-sans text-[11px] font-bold text-white tracking-wide">
+              {upliftPercent}% OFF
+            </span>
+          </div>
+
+          {/* Promo code row */}
+          <div className="flex items-center justify-between gap-4 border-t border-white/10 bg-[#131720] px-4 py-3">
+            <span className="font-sans text-[13px] text-white/80">
+              Extra 10% off with code
+            </span>
+            <button
+              type="button"
+              onClick={handlePromoCopy}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-[13px] font-semibold tracking-widest transition-all ${promoCopied ? "border-[#4ade80] bg-[#4ade80]/10 text-[#4ade80]" : "border-white/20 bg-white/8 text-white hover:border-white/40"}`}
+              aria-label={promoCopied ? "Copied" : `Copy code ${PROMO_CODE}`}
+            >
+              {PROMO_CODE}
+              {promoCopied ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Measure */}
