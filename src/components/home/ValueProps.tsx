@@ -44,7 +44,7 @@ const features = [
   },
   {
     title: 'Quick Delivery',
-    description: 'Made to order and delivered within 14-18 working days. Straight to your door.',
+    description: 'Made to order and delivered within 14-18 business days. Straight to your door.',
     icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
           <rect x="1" y="3" width="15" height="13"></rect>

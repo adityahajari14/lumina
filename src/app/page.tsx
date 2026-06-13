@@ -1,5 +1,6 @@
 import Hero from "../components/home/Hero";
 import ValueProps from "../components/home/ValueProps";
+import ComparisonTable from "../components/home/ComparisonTable";
 import OurStory from "../components/home/OurStory";
 import MeasuringGuide from "../components/home/MeasuringGuide";
 import Installation from "../components/home/Installation";
@@ -16,6 +17,7 @@ export default function Home() {
       <EmailCaptureModal />
       <Hero />
       <ValueProps />
+      <ComparisonTable />
       <OurStory />
       <MeasuringGuide />
       <Installation />

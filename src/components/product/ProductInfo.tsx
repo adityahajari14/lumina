@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import SaleCountdown from "@/components/common/SaleCountdown";
 import { useCart } from "@/context/CartContext";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { getComparePriceData } from "@/lib/compare-price";
@@ -358,13 +359,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           <p className="font-sans text-[#657186] text-[13px]">
             Sale price · free shipping
           </p>
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-800" />
-            </span>
-            <span className="font-sans text-[12px] font-medium text-red-600">Offer ends today</span>
-          </div>
+          <SaleCountdown variant="pdp" />
         </div>
 
         {/* Sale offer block */}
@@ -469,7 +464,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       <div className="flex flex-col gap-4 mt-6">
         <div className="flex flex-col gap-2">
           <span className="font-sans text-[14px]">
-            <span className="font-semibold text-[#131720]">Blind Colour — </span>
+            <span className="font-semibold text-[#131720]">Blind Color — </span>
             <span className="text-[#657186]">{selectedBlindColor?.name}</span>
           </span>
           <div className="flex gap-3">
@@ -487,7 +482,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
 
         <div className="flex flex-col gap-2 mt-2">
           <span className="font-sans text-[14px]">
-            <span className="font-semibold text-[#131720]">Frame Colour — </span>
+            <span className="font-semibold text-[#131720]">Frame Color — </span>
             <span className="text-[#657186]">{selectedFrameColor?.name}</span>
           </span>
           <div className="flex gap-3">
@@ -551,36 +546,45 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
         </div>
       </div>
 
-      {/* Guarantee Grid */}
-      <div className="grid grid-cols-3 gap-2 py-6 border-t border-[#dbe0e6]">
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
+      {/* Perfect-Fit Promise */}
+      <div className="py-6 border-t border-[#dbe0e6]">
+        <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-[#657186] mb-4">
+          The Perfect-Fit Promise
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          {/* 30-Day Free Returns — rotate arrow icon */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+            </div>
+            <span className="font-semibold text-xs text-[#131720]">30-Day Free Returns</span>
+            <span className="text-xs text-[#657186]">No questions asked</span>
           </div>
-          <span className="font-semibold text-xs text-[#131720]">1 Year Guarantee</span>
-          <span className="text-xs text-[#657186]">Manufacturer backed cover</span>
-        </div>
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
-              <path d="M12.5 10L5.52253 16.9775C5.19101 17.309 4.74137 17.4953 4.27253 17.4953C3.80369 17.4953 3.35405 17.309 3.02253 16.9775C2.69101 16.646 2.50476 16.1963 2.50476 15.7275C2.50476 15.2587 2.69101 14.809 3.02253 14.4775L10 7.5" />
-              <path d="M15 12.5L18.3333 9.16663" />
-              <path d="M17.9167 9.58334L16.3217 7.98834C16.0091 7.67585 15.8334 7.252 15.8333 6.81001V5.83334L13.95 3.95001C13.0204 3.021 11.7625 2.49531 10.4483 2.48667L7.5 2.46667L8.26667 3.15001C8.81121 3.63283 9.24724 4.22559 9.54602 4.88921C9.84479 5.55283 9.99952 6.27224 10 7.00001V8.33334L11.6667 10H12.6433C13.0853 10.0001 13.5092 10.1758 13.8217 10.4883L15.4167 12.0833" />
-            </svg>
+
+          {/* 1-Year Warranty */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <span className="font-semibold text-xs text-[#131720]">1-Year Warranty</span>
+            <span className="text-xs text-[#657186]">Manufacturer backed</span>
           </div>
-          <span className="font-semibold text-xs text-[#131720]">Easy Install</span>
-          <span className="text-xs text-[#657186]">No tools needed, all fittings included</span>
-        </div>
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
+
+          {/* 4.8 / 5 Stars */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="text-[#131720]">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </div>
+            <span className="font-semibold text-xs text-[#131720]">4.8 / 5 Stars</span>
+            <span className="text-xs text-[#657186]">Rated Excellent — 750+ reviews</span>
           </div>
-          <span className="font-semibold text-xs text-[#131720]">4.8 / 5 Stars</span>
-          <span className="text-xs text-[#657186]">Rated Excellent — 750+ reviews</span>
         </div>
       </div>
 

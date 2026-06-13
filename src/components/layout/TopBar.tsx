@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import SaleCountdown from "@/components/common/SaleCountdown";
 
-const OFFER_TEXT =
-  "Our Biggest Ever Sale | Up to 60% Off Plus Extra 10% Off with Code FINAL10 | Today Only | Whilst Stock Lasts";
+const OFFER_TEXT = "Our Biggest Sale | Up to 60% Off + Extra 10% with Code FINAL10 | Ends in";
 const OFFER_CODE = "FINAL10";
 
 export default function TopBar() {
@@ -22,8 +22,9 @@ export default function TopBar() {
   return (
     <div className="w-full bg-[#000] border-b border-white/10">
       <div className="mx-auto flex min-h-10 max-w-[1280px] flex-col items-center justify-center gap-2 px-4 py-2 text-center sm:flex-row sm:gap-3">
-        <p className="font-sans text-[11px] font-medium uppercase tracking-[0.08em] text-white sm:text-[12px] md:text-[13px]">
-          {OFFER_TEXT}
+        <p className="font-sans text-[11px] font-medium uppercase tracking-[0.08em] text-white sm:text-[12px] md:text-[13px] flex items-center gap-2 flex-wrap justify-center">
+          <span>{OFFER_TEXT}</span>
+          <SaleCountdown variant="topbar" />
         </p>
         <button
           type="button"

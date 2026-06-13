@@ -6,23 +6,11 @@ import type { NewsletterSubscriptionResult } from "@/types";
 const STORAGE_KEY = "lumina_email_modal_seen";
 const DELAY_MS = 3000;
 
-const BENEFITS = [
-  {
-    title: "100% Blackout",
-    description: "Triple-layer fabric — complete darkness, noon or midnight.",
-  },
-  {
-    title: "No-Drill Install",
-    description: "Spring tension mount. Fits in seconds, leaves no marks.",
-  },
-  {
-    title: "Made to Your Exact Size",
-    description: "Enter your dimensions and every blind is cut to fit.",
-  },
-  {
-    title: "Energy Efficient",
-    description: "Honeycomb insulation — cooler summers, warmer winters.",
-  },
+const QUIZ_OPTIONS = [
+  { id: "light", label: "Too much light in the morning" },
+  { id: "noise", label: "Street noise waking me up" },
+  { id: "temperature", label: "Room gets too hot or cold" },
+  { id: "shift", label: "I work shifts or odd hours" },
 ];
 
 interface ApiResponse<T> {
@@ -33,6 +21,8 @@ interface ApiResponse<T> {
 
 export default function EmailCaptureModal() {
   const [visible, setVisible] = useState(false);
+  const [step, setStep] = useState<"quiz" | "email" | "success">("quiz");
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -51,6 +41,11 @@ export default function EmailCaptureModal() {
     localStorage.setItem(STORAGE_KEY, "1");
   };
 
+  const handleQuizContinue = () => {
+    if (!selectedAnswer) return;
+    setStep("email");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -67,6 +62,7 @@ export default function EmailCaptureModal() {
       }
       setSuccessData(json.data);
       setEmail("");
+      setStep("success");
       localStorage.setItem(STORAGE_KEY, "1");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Unable to subscribe right now.");
@@ -86,100 +82,93 @@ export default function EmailCaptureModal() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Get 10% off your first order">
-
-      {/* ── Left panel: image ── */}
-      <div className="relative hidden md:block md:w-[55%]">
-        {/* Background image */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: "url('/product/gallery-1.webp')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-        {/* Overlay: dark on the right edge to blend into the form panel */}
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="absolute inset-0 bg-linear-to-r from-transparent from-black/100 to-black/30" />
-
-        {/* Content sits at the bottom */}
-        <div className="absolute inset-0 flex flex-col justify-between p-12 z-10">
-          {/* Top: wordmark */}
-          <span className="font-sans text-[20px] font-semibold tracking-[0.25em] uppercase text-white/80">
-            Lumina
-          </span>
-
-          {/* Bottom: headline + benefits */}
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Limited Offer</span>
-              </div>
-              <h2 className="font-playfair text-[40px] font-medium leading-[1.1] text-white">
-                Sleep better.<br />
-                <span className="italic opacity-60">Starting tonight.</span>
-              </h2>
-              <p className="font-sans text-[13px] leading-6 text-white/40 max-w-xs">
-                Join thousands who transformed their sleep with Lumina blackout blinds.
-              </p>
-            </div>
-
-            <div className="h-px bg-white/10" />
-
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              {BENEFITS.map((b) => (
-                <div key={b.title} className="flex items-start gap-2.5">
-                  <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
-                  <div>
-                    <p className="font-sans text-[12px] font-semibold text-white/80 leading-5">{b.title}</p>
-                    <p className="font-sans text-[11px] text-white/35 leading-4 mt-0.5">{b.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Right panel: form ── */}
-      <div className="flex w-full md:w-[45%] flex-col bg-black">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Get 10% off your first order"
+    >
+      <div className="relative w-full max-w-[480px] bg-[#0d0f14] rounded-[24px] overflow-hidden shadow-2xl">
         {/* Close */}
-        <div className="flex justify-end p-6">
-          <button
-            type="button"
-            onClick={dismiss}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/30 transition-colors hover:border-white/20 hover:text-white/60"
-            aria-label="Close"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={dismiss}
+          className="absolute top-5 right-5 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/30 transition-colors hover:border-white/20 hover:text-white/60"
+          aria-label="Close"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
 
-        <div className="flex flex-1 flex-col justify-center px-10 pb-14 pt-0 lg:px-14">
-          {!successData ? (
-            <div className="flex flex-col gap-8 max-w-[360px]">
+        <div className="px-8 pt-10 pb-9">
+          {/* Offer badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 mb-6">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+            <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">
+              Exclusive welcome offer — 10% off
+            </span>
+          </div>
 
-              {/* Offer callout */}
-              <div className="flex flex-col gap-1">
-                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
-                  Exclusive welcome offer
+          {step === "quiz" && (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                <h2 className="font-playfair text-[28px] font-medium leading-tight text-white">
+                  What&apos;s keeping you up at night?
+                </h2>
+                <p className="font-sans text-[13px] text-white/40 leading-5">
+                  Tell us your biggest sleep disruptor and unlock 10% off your first order.
                 </p>
-                <div className="flex items-end gap-3 mt-1">
-                  <span className="font-playfair text-[64px] font-medium leading-none text-white">10%</span>
-                  <span className="font-playfair text-[32px] font-medium leading-none text-white/60 pb-2">off</span>
-                </div>
-                <p className="font-sans text-[13px] text-white/70 mt-1">your first order</p>
               </div>
 
-              <div className="h-px bg-white/10" />
+              <div className="flex flex-col gap-2">
+                {QUIZ_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSelectedAnswer(opt.id)}
+                    className={`w-full text-left rounded-xl border px-4 py-3.5 font-sans text-[14px] transition-all ${
+                      selectedAnswer === opt.id
+                        ? "border-white/40 bg-white/10 text-white"
+                        : "border-white/8 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white/80"
+                    }`}
+                  >
+                    <span className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border mr-3 align-middle transition-colors ${selectedAnswer === opt.id ? "border-emerald-400 bg-emerald-400/20" : "border-white/20"}`}>
+                      {selectedAnswer === opt.id && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      )}
+                    </span>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
 
-              <p className="font-sans text-[14px] leading-6 text-white/70">
-                Enter your email and we&apos;ll send your personal discount code instantly.
+              <button
+                type="button"
+                onClick={handleQuizContinue}
+                disabled={!selectedAnswer}
+                className="w-full rounded-xl bg-white py-3.5 font-sans text-[14px] font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Claim My 10% Off →
+              </button>
+
+              <p className="font-sans text-[11px] text-white/25 -mt-2">
+                No purchase required. Unsubscribe anytime.
               </p>
+            </div>
+          )}
+
+          {step === "email" && (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="font-playfair text-[56px] font-medium leading-none text-white">10%</span>
+                  <span className="font-playfair text-[28px] font-medium leading-none text-white/50 pb-2">off</span>
+                </div>
+                <p className="font-sans text-[13px] text-white/50">
+                  Enter your email and we&apos;ll send your personal discount code instantly.
+                </p>
+              </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <input
@@ -195,20 +184,22 @@ export default function EmailCaptureModal() {
                   disabled={isSubmitting}
                   className="w-full rounded-xl bg-white py-3.5 font-sans text-[14px] font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? "Submitting…" : "Claim My 10% Off"}
+                  {isSubmitting ? "Submitting…" : "Get My Code"}
                 </button>
               </form>
 
               {errorMessage && (
-                <p className="font-sans text-[12px] text-red-400 -mt-4">{errorMessage}</p>
+                <p className="font-sans text-[12px] text-red-400 -mt-3">{errorMessage}</p>
               )}
 
-              <p className="font-sans text-[11px] text-white/40 -mt-4">
+              <p className="font-sans text-[11px] text-white/30 -mt-3">
                 By continuing you agree to receive email updates. Unsubscribe anytime.
               </p>
             </div>
-          ) : (
-            <div className="flex flex-col gap-7 max-w-[360px]">
+          )}
+
+          {step === "success" && successData && (
+            <div className="flex flex-col gap-7">
               <div className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-500/25 bg-emerald-500/10">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />

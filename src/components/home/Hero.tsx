@@ -70,8 +70,16 @@ export default function Hero() {
 
           {/* Description */}
           <p className="font-sans font-light text-[#657186] text-lg leading-[29.25px] max-w-[448px]">
-            The Lumina blind blocks 100% of light — no gaps, no glare. Precision-made for your window, installed in minutes. No drills. No fuss.
+            Wake up on your schedule, not the sun&apos;s. Lumina blocks 100% of light — no gaps, no glare. Precision-made for your window, installed in minutes. No drills. No fuss.
           </p>
+
+          {/* USA trust line */}
+          <div className="flex items-center gap-2 text-[#657186]">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+            <span className="font-sans text-[13px]">Free shipping across the USA on every order</span>
+          </div>
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2">

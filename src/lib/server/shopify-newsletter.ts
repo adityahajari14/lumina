@@ -227,6 +227,11 @@ async function upsertCustomerByEmail(email: string): Promise<{
   };
 }
 
+function safeConsentTimestamp(): string {
+  // Send 10s in the past to avoid clock-skew rejection from Shopify ("must not be in the future")
+  return new Date(Date.now() - 10_000).toISOString();
+}
+
 async function createCustomerWithMarketingConsent(email: string): Promise<{
   created: boolean;
   customerId?: string;
@@ -251,7 +256,7 @@ async function createCustomerWithMarketingConsent(email: string): Promise<{
       emailMarketingConsent: {
         marketingState: 'SUBSCRIBED',
         marketingOptInLevel: 'SINGLE_OPT_IN',
-        consentUpdatedAt: new Date().toISOString(),
+        consentUpdatedAt: safeConsentTimestamp(),
       },
     },
   });
@@ -302,7 +307,7 @@ async function updateCustomerMarketingConsent(customerId: string): Promise<void>
       emailMarketingConsent: {
         marketingState: 'SUBSCRIBED',
         marketingOptInLevel: 'SINGLE_OPT_IN',
-        consentUpdatedAt: new Date().toISOString(),
+        consentUpdatedAt: safeConsentTimestamp(),
       },
     },
   });
