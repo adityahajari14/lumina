@@ -3,8 +3,8 @@
 import { useState } from "react";
 import SaleCountdown from "@/components/common/SaleCountdown";
 
-const OFFER_TEXT = "Our Biggest Sale | Up to 60% Off + Extra 10% with Code FINAL10 | Ends in";
-const OFFER_CODE = "FINAL10";
+const OFFER_TEXT = "Our Biggest Sale | Up to 60% Off + Extra 15% with Code FINAL15 | Ends in";
+const OFFER_CODE = "FINAL15";
 
 export default function TopBar() {
   const [copied, setCopied] = useState(false);

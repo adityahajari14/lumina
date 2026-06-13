@@ -22,7 +22,7 @@ import type {
 } from "@/types";
 import { DEFAULT_CONFIGURATION } from "@/types";
 
-const PROMO_CODE = "FINAL10";
+const PROMO_CODE = "FINAL15";
 
 interface ProductInfoProps {
   product: Product;
@@ -382,7 +382,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           {/* Promo code row */}
           <div className="flex items-center justify-between gap-4 border-t border-white/10 bg-[#131720] px-4 py-3">
             <span className="font-sans text-[13px] text-white/80">
-              Extra 10% off with code
+              Extra 15% off with code
             </span>
             <button
               type="button"
