@@ -3,25 +3,10 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Returns & Refunds Policy - Lumina Blackout Blinds',
   description:
-    'Read the Lumina Blackout Blinds returns and refunds policy for made-to-measure blinds, including our 30-day return window, damaged items, faulty goods, replacements, cancellations, and refunds.',
+    'Read the Lumina Blackout Blinds returns and refunds policy for made-to-measure blinds, including damaged items, faulty goods, replacements, cancellations, and refunds.',
 };
 
 const sections = [
-  {
-    title: '30-Day Returns',
-    content: (
-      <p>
-        We want you to love your Lumina blind. If you are not completely satisfied, you may return
-        your order within <strong>30 days</strong> of delivery for a full refund. To start a return,
-        email us at{' '}
-        <a href="mailto:info@luminablackoutblinds.com" className="underline">
-          info@luminablackoutblinds.com
-        </a>{' '}
-        with your order number and reason for return. We will send you return instructions within 1
-        business day.
-      </p>
-    ),
-  },
   {
     title: 'Damaged or Faulty Orders',
     content: (
@@ -161,8 +146,8 @@ export default function ReturnsRefundsPolicyPage() {
           <p className="text-sm text-gray-500 mb-6">Last updated: June 13, 2026</p>
           <p className="text-gray-700 leading-relaxed">
             At Lumina, every blackout blind is made to measure for your window and checked before
-            shipment. This policy explains our 30-day return window and what happens if your order
-            arrives damaged, appears faulty, needs inspection, or cannot be fulfilled.
+            shipment. This policy explains what happens if your order arrives damaged, appears
+            faulty, needs inspection, or cannot be fulfilled.
           </p>
         </div>
 

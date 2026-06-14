@@ -552,16 +552,18 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           The Perfect-Fit Promise
         </p>
         <div className="grid grid-cols-3 gap-3">
-          {/* 30-Day Free Returns — rotate arrow icon */}
+          {/* Free USA Shipping */}
           <div className="flex flex-col items-center text-center gap-2">
             <div className="bg-[#eaedf0] rounded-full w-10 h-10 flex items-center justify-center mb-1">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#131720]">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
               </svg>
             </div>
-            <span className="font-semibold text-xs text-[#131720]">30-Day Free Returns</span>
-            <span className="text-xs text-[#657186]">No questions asked</span>
+            <span className="font-semibold text-xs text-[#131720]">Free USA Shipping</span>
+            <span className="text-xs text-[#657186]">On every order, always</span>
           </div>
 
           {/* 1-Year Warranty */}

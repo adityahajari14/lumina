@@ -93,8 +93,8 @@ export default function EmailCaptureModal() {
             backgroundPosition: "center",
           }}
         />
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="absolute inset-0 bg-linear-to-r from-black to-black/30" />
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/60 to-black/30" />
 
         <div className="absolute inset-0 flex flex-col justify-between p-12 z-10">
           <span className="font-sans text-[20px] font-semibold tracking-[0.25em] uppercase text-white/80">
