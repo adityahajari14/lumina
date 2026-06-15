@@ -73,7 +73,7 @@ function ReviewMediaGallery({ review }: { review: ProductReview }) {
   if (media.length === 0) return null;
 
   return (
-    <div className="mt-4 grid max-w-[720px] grid-cols-2 gap-2 sm:grid-cols-3">
+    <div className="mt-4 grid w-full max-w-180 grid-cols-2 gap-2 sm:grid-cols-3">
       {media.map((item, index) => {
         const alt = item.alt || `${review.author} review media ${index + 1}`;
         const itemClassName =
@@ -135,7 +135,7 @@ function ReviewMediaStrip({ reviews }: { reviews: ProductReview[] }) {
   return (
     <>
       {/* Strip */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-1 -mb-1">
         {stripImages.map((img, i) => {
           const isLast = i === STRIP_VISIBLE - 1 && hasMore;
           return isLast ? (
@@ -613,7 +613,7 @@ export default function ProductReviews({
                   {formatReviewDate(review.date)}
                 </p>
 
-                <p className="mt-3 max-w-[720px] font-sans text-[14px] leading-6 text-[#384152]">
+                <p className="mt-3 max-w-180 font-sans text-[14px] leading-6 text-[#384152]">
                   {review.content}
                 </p>
 
