@@ -56,16 +56,6 @@ function RatingStars({ rating, size = "w-4 h-4" }: { rating: number; size?: stri
   );
 }
 
-function formatReviewDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
 
 function ReviewMediaGallery({ review }: { review: ProductReview }) {
   const media = review.media?.filter((item) => item.src).slice(0, 6) || [];
@@ -608,10 +598,6 @@ export default function ProductReviews({
                     {review.title}
                   </h4>
                 </div>
-
-                <p className="mt-1 font-sans text-[12px] text-[#657186]">
-                  {formatReviewDate(review.date)}
-                </p>
 
                 <p className="mt-3 max-w-180 font-sans text-[14px] leading-6 text-[#384152]">
                   {review.content}

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SaleCountdown from "@/components/common/SaleCountdown";
 import { useCart } from "@/context/CartContext";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
@@ -63,6 +63,8 @@ function ProductRatingStars({ rating }: { rating: number }) {
 
 export default function ProductInfo({ product, initialReviewsData }: ProductInfoProps) {
   const { addToCart } = useCart();
+  const addToCartRef = useRef<HTMLButtonElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
   const [pricingLoaded, setPricingLoaded] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [priceMatrix, setPriceMatrix] = useState<PriceBandMatrix | null>(null);
@@ -153,6 +155,17 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       isMounted = false;
     };
   }, [initialReviewsData, product.id, product.slug]);
+
+  useEffect(() => {
+    const button = addToCartRef.current;
+    if (!button) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(button);
+    return () => observer.disconnect();
+  }, []);
 
   const selectedCustomizations = useMemo(
     () =>
@@ -522,6 +535,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       {/* Add To Cart */}
       <div className="flex flex-col gap-3 mt-6">
         <button
+          ref={addToCartRef}
           type="button"
           onClick={handleAddToCart}
           disabled={isAddToCartDisabled}
@@ -593,6 +607,36 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       {/* <div id="product-details" className="border-t border-[#dbe0e6]">
         <ProductAccordion items={product.accordionItems} />
       </div> */}
+
+      {/* Sticky Add to Cart bar */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 border-t border-[#dbe0e6] bg-white/95 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition-transform duration-300 ${showStickyBar ? "translate-y-0" : "translate-y-full"}`}
+        aria-hidden={!showStickyBar}
+      >
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-4 py-3 md:px-8">
+          <div className="flex min-w-0 flex-col">
+            <div className="flex items-center gap-2">
+              <span className="font-sans text-[22px] font-semibold text-[#131720]">
+                {formatPriceWithCurrency(totalPrice, product.currency)}
+              </span>
+              <span className="font-sans text-[16px] text-[#8c95a4] line-through">
+                {formatPriceWithCurrency(comparePrice, product.currency)}
+              </span>
+              <span className="rounded-full bg-[#131720] px-2 py-0.5 font-sans text-[12px] font-semibold text-white">
+                {upliftPercent}% off
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isAddToCartDisabled}
+            className="shrink-0 rounded-full bg-[#131720] px-6 py-3 font-sans text-[14px] font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:bg-[#9aa3af]"
+          >
+            {isAddingToCart ? "Adding..." : "Add to Cart"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

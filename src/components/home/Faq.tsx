@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 
+const INITIAL_VISIBLE = 5;
+
 export default function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   const faqs = [
     {
@@ -21,6 +24,34 @@ export default function Faq() {
     {
       question: "Do you offer custom sizes beyond the listed options?",
       answer: `Absolutely. Select "Custom" at checkout and enter your exact dimensions. We cut to any size from 20cm up to 250cm wide, and any drop from 30cm to 300cm. Custom orders are priced based on area — you'll see the price update as you type.`
+    },
+    {
+      question: "How long does delivery take?",
+      answer: "Every Lumina blind is made to order. From the time you place your order, you can expect delivery within 14–18 business days. That window covers production, quality check, and shipping to your door. Once your blind ships, you'll receive a tracking number by email."
+    },
+    {
+      question: "How much does shipping cost?",
+      answer: "Nothing. Lumina offers free shipping on every order with no minimum spend. We currently ship within the United States only. We're unable to deliver to PO boxes, military addresses, or international addresses at this time."
+    },
+    {
+      question: "What if my blind arrives damaged or faulty?",
+      answer: "Contact us at info@luminablackoutblinds.com within 3 business days of delivery. Include your order number, a description of the issue, and photos if possible. Do not install the blind until we've reviewed your claim, as installation can affect our ability to assess the fault. We aim to respond within 1 business day and will arrange a replacement if a manufacturing fault or transit damage is confirmed."
+    },
+    {
+      question: "Can I cancel or change my order after placing it?",
+      answer: "Because every blind is cut to your exact measurements and goes into production shortly after your order is confirmed, we're usually unable to make changes or cancel once production has started. Please double-check your measurements and selections carefully before ordering. If you spot an error immediately after placing your order, email us as soon as possible and we'll do our best to catch it before production begins."
+    },
+    {
+      question: "What does the warranty cover?",
+      answer: "Every Lumina blind comes with a 1-year manufacturer's guarantee against confirmed manufacturing faults. It does not cover normal wear and tear, accidental damage, incorrect installation, alterations, or fading from prolonged sunlight exposure. As with all made-to-measure blinds, a manufacturing tolerance of +/- 4mm is standard and does not constitute a fault."
+    },
+    {
+      question: "What colors and frame options are available?",
+      answer: "The blind fabric comes in four colors: White, Cream, Graphite, and Sky Blue. Frames are available in White or Graphite. All combinations can be selected on the product page before adding to cart."
+    },
+    {
+      question: "Does the blind work on any window type?",
+      answer: "The Lumina blind is designed specifically for recessed windows — windows with a recess depth of at least 5mm and up to 80mm. The tension bar sits inside the recess, which is what gives the flush, edge-to-edge blackout. It is not suitable for flat-wall mounting or non-recessed frames."
     }
   ];
 
@@ -45,7 +76,7 @@ export default function Faq() {
 
         {/* FAQ List */}
         <div className="flex flex-col w-full border-t border-[#dbe0e6]">
-          {faqs.map((faq, i) => {
+          {(showAll ? faqs : faqs.slice(0, INITIAL_VISIBLE)).map((faq, i) => {
             const isOpen = openIndex === i;
             return (
               <div
@@ -84,6 +115,17 @@ export default function Faq() {
             );
           })}
         </div>
+
+        {/* View more / less */}
+        {faqs.length > INITIAL_VISIBLE && (
+          <button
+            type="button"
+            onClick={() => setShowAll((prev) => !prev)}
+            className="self-center mt-2 rounded-full border border-[#b8bec7] bg-white px-6 py-2.5 font-sans text-[14px] text-[#131720] shadow-sm transition-colors hover:bg-[#f7f8f8]"
+          >
+            {showAll ? "View less" : "View more"}
+          </button>
+        )}
 
         {/* Contact Footer */}
         <div className="bg-[#f9fafb] flex flex-col gap-2 items-center p-8 rounded-2xl w-full text-center">

@@ -90,7 +90,7 @@ In Shopify admin:
 2. Create a market named `Blackout Blinds`.
 3. Assign the intended countries/regions or customer grouping for blackout.
 4. Configure the market domain/subdomain only if you are using Shopify-managed market domains for hosted store surfaces.
-5. In the blackout market catalog/product availability setup, include only `non-driii-honeycomb-blackout-blinds`.
+5. In the blackout market catalog/product availability setup, include only `honeycomb-blackout-blind`.
 6. Exclude all other products from the blackout market catalog.
 7. If needed, set market-specific currency, language, taxes, and pricing behavior.
 
@@ -104,7 +104,7 @@ Recommended outcome:
 
 Confirm the blackout product exists in the same Shopify store with:
 
-- Handle: `non-driii-honeycomb-blackout-blinds`
+- Handle: `honeycomb-blackout-blind`
 - Status: `Active`
 - Available on the sales channel used by the headless storefront
 - Included in the `Blackout Blinds` market/catalog only
@@ -256,7 +256,7 @@ Caution:
 1. Set blackout production env vars.
 2. Create a separate `Blackout Blinds` storefront in Shopify `Headless`.
 3. Create a separate `Blackout Blinds` market in Shopify.
-4. Add only `non-driii-honeycomb-blackout-blinds` to the blackout market/catalog.
+4. Add only `honeycomb-blackout-blind` to the blackout market/catalog.
 5. Add the blackout domain to Customer Account API settings for the blackout storefront.
 6. Deploy `blackout-blinds`.
 7. Confirm `/api/health` returns success.

@@ -51,20 +51,9 @@ const Footer = () => {
         </Link>
 
         <div className="mt-8 flex flex-col items-center gap-2 text-center">
-          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
-            Manufactured in
+          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-white/55">
+            Manufactured in Texas, USA
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-sans text-[12px] leading-[18px] text-white/65">
-            <span>Texas, USA</span>
-            <span className="text-white/25" aria-hidden="true">
-              &middot;
-            </span>
-            <span>Leeds, UK</span>
-            <span className="text-white/25" aria-hidden="true">
-              &middot;
-            </span>
-            <span>Guangzhou, China</span>
-          </div>
         </div>
       </div>
 

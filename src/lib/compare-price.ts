@@ -8,7 +8,7 @@ export function getComparePriceData(
   upliftPercent: number = 60
 ): ComparePriceData {
   const normalizedPercent = Math.max(1, upliftPercent);
-  const compareAtPrice = Math.round(price * (1 + normalizedPercent / 100) * 100) / 100;
+  const compareAtPrice = Math.round((price / (1 - normalizedPercent / 100)) * 100) / 100;
 
   return {
     compareAtPrice,
