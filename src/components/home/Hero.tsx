@@ -5,118 +5,99 @@ import { BLACKOUT_PRODUCT_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-route
 
 export default function Hero() {
   return (
-    <section className="relative w-full bg-[#eaedf0] min-h-[90vh] flex items-center justify-center py-20 lg:py-30 lg:pt-10 overflow-hidden">
-      {/* Background image & gradient overlay */}
+    <section className="relative w-full bg-[#0a0c10] min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background image */}
       <div className="absolute inset-0 z-0">
-        <Image 
-          src="/home/hero-img1.png" 
-          alt="Minimal room with window" 
-          fill 
-          className="object-cover opacity-25"
+        <Image
+          src="/home/lumina-hero.webp"
+          alt="Lumina blackout blind lifestyle"
+          fill
+          className="object-cover opacity-80"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#eaedf0] via-[#eaedf0]/90 to-transparent lg:to-[rgba(234,237,240,0.4)]" />
+        {/* Left-to-right dark fade so text stays readable */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/5" />
+        {/* Top & bottom vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/50" />
       </div>
 
-      {/* Content container */}
-      <div className="relative z-10 w-full max-w-[1280px] px-6 mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-12 items-center">
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-[1280px] px-6 mx-auto grid lg:grid-cols-2 gap-16 items-center py-28 lg:py-36">
 
-        {/* Mobile Header (Hidden on Desktop) */}
-        <div className="flex flex-col items-start gap-6 max-w-[576px] w-full lg:hidden order-1">
-          {/* Badge: Rated 4.8 */}
-          <div className="bg-[#4051b5]/10 rounded-full py-1.5 px-3 flex items-center gap-2">
-            <div className="flex gap-0.5 text-[#4051b5]">
+        {/* Left Column */}
+        <div className="flex flex-col items-start gap-7">
+
+          {/* Rating pill */}
+          <div className="flex items-center gap-2.5 bg-white/8 border border-white/12 rounded-full py-2 px-4">
+            <div className="flex gap-0.5 text-amber-400">
               {[...Array(5)].map((_, i) => (
-                <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               ))}
             </div>
-            <span className="text-[#4051b5] font-sans font-medium text-xs">     
-              Rated 4.8 by 750+ customers
+            <span className="font-sans text-white/70 text-xs tracking-wide">
+              4.8 · 750+ verified reviews
             </span>
           </div>
 
           {/* Heading */}
-          <h1 className="flex flex-col font-playfair font-medium text-[#131720] text-5xl leading-tight">
-            <span>Sleep in</span>
-            <span className="font-normal italic">total</span>
-            <span>darkness.</span>
-          </h1>
-        </div>
-
-        {/* Left Column */}
-        <div className="flex flex-col items-start gap-6 max-w-[576px] order-3 lg:order-1">
-          {/* Badge: Rated 4.8 - Desktop */}
-          <div className="hidden lg:flex bg-[#4051b5]/10 rounded-full py-1.5 px-3 items-center gap-2">
-            <div className="flex gap-0.5 text-[#4051b5]">
-              {[...Array(5)].map((_, i) => (
-                <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-              ))}
-            </div>
-            <span className="text-[#4051b5] font-sans font-medium text-xs">     
-              Rated 4.8 by 750+ customers
-            </span>
-          </div>
-
-          {/* Heading - Desktop */}
-          <h1 className="hidden lg:flex flex-col font-playfair font-medium text-[#131720] text-[72px] leading-[72px]">
-            <span>Sleep in</span>
-            <span className="font-normal italic">total</span>
-            <span>darkness.</span>
+          <h1 className="font-playfair font-medium text-white text-[56px] lg:text-[80px] leading-[1.0] tracking-tight">
+            Sleep in<br />
+            <span className="font-normal italic text-white/80">total</span><br />
+            darkness.
           </h1>
 
           {/* Description */}
-          <p className="font-sans font-light text-[#657186] text-lg leading-[29.25px] max-w-[448px]">
-            Wake up on your schedule, not the sun&apos;s. Lumina blocks 100% of light — no gaps, no glare. Precision-made for your window, installed in minutes. No drills. No fuss.
+          <p className="font-sans font-light text-white/55 text-[17px] leading-relaxed max-w-[420px]">
+            Wake up on your schedule, not the sun&apos;s. Lumina blocks 100% of light — no gaps, no glare. Precision-made for your window. No drills. No fuss.
           </p>
 
-          {/* USA trust line */}
-          <div className="flex items-center gap-2 text-[#657186]">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
-            </svg>
-            <span className="font-sans text-[13px]">Free shipping across the USA on every order</span>
-          </div>
-
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2">
-            <Link 
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
+            <Link
               href={BLACKOUT_PRODUCT_PATH}
-              className="bg-[#131720] text-[#f9fafb] font-sans font-medium text-sm text-center px-[32px] py-[16px] rounded-full hover:bg-black transition-colors"
+              className="bg-white text-[#0a0c10] font-sans font-semibold text-[14px] text-center px-8 py-4 rounded-full hover:bg-white/90 transition-colors"
             >
               Shop The Blind
             </Link>
-            <Link 
+            <Link
               href={MEASURING_GUIDE_PATH}
-              className="border border-[#dbe0e6] text-[#131720] font-sans font-medium text-sm text-center px-[32px] py-[16px] rounded-full hover:bg-white transition-colors"
+              className="border border-white/25 text-white/80 font-sans font-medium text-[14px] text-center px-8 py-4 rounded-full hover:bg-white/8 hover:text-white transition-colors"
             >
               How to Measure
             </Link>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-8 pt-4">
-            <div className="flex flex-col gap-0.5">
-              <span className="font-playfair font-semibold text-[#131720] text-2xl leading-none">100%</span>
-              <span className="font-sans text-[#657186] text-xs">Light Blocked</span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="font-playfair font-semibold text-[#131720] text-2xl leading-none">12+</span>
-              <span className="font-sans text-[#657186] text-xs">Size Options</span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="font-playfair font-semibold text-[#131720] text-2xl leading-none">5 min</span>
-              <span className="font-sans text-[#657186] text-xs">Avg Install Time</span>
-            </div>
+          {/* Stats row */}
+          <div className="flex items-center gap-0 pt-3 border-t border-white/8 w-full max-w-[420px]">
+            {[
+              { value: '100%', label: 'Light Blocked' },
+              { value: '12+', label: 'Size Options' },
+              { value: '5 min', label: 'Install Time' },
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center">
+                <div className="flex flex-col gap-1 px-5 first:pl-0">
+                  <span className="font-playfair font-semibold text-white text-[26px] leading-none">{stat.value}</span>
+                  <span className="font-sans text-white/40 text-[11px] uppercase tracking-wider">{stat.label}</span>
+                </div>
+                {i < 2 && <div className="w-px h-8 bg-white/10" />}
+              </div>
+            ))}
+          </div>
+
+          {/* Free shipping note */}
+          <div className="flex items-center gap-2 text-white/35 -mt-2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+            <span className="font-sans text-[12px] tracking-wide">Free shipping across the USA on every order</span>
           </div>
         </div>
 
-        {/* Right Column - Image */}
-        <div className="relative w-full aspect-[1] max-w-[480px] lg:max-w-[592px] mx-auto lg:ml-auto mt-2 lg:mt-0 order-2 lg:order-2">
-          <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-[0_25px_50px_-12px_rgba(19,23,32,0.1)]">
+        {/* Right Column - Video */}
+        <div className="relative w-full aspect-square max-w-[520px] mx-auto lg:ml-auto">
+          <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] ring-1 ring-white/8">
             <SmartVideo
               src="/home/blackout-hero.webm"
               posterSrc="/product/gallery-1.webp"
@@ -127,21 +108,26 @@ export default function Hero() {
             />
           </div>
 
-          {/* Certified Badge Overlay */}
-          <div className="absolute -bottom-4 left-4 lg:-left-6 bg-[#f9fafb] border border-[#dbe0e6] rounded-[16px] py-[17px] px-[21px] shadow-lg flex flex-col gap-0.5">
-            <span className="font-sans text-[#657186] text-xs leading-none">Certified by</span>
-            <span className="font-sans font-semibold text-[#131720] text-sm leading-none mt-1">OEKO-TEX® Standard 100</span>
+          {/* OEKO-TEX badge */}
+          <div className="absolute -bottom-5 left-4 lg:-left-6 bg-white/8 backdrop-blur-xl border border-white/15 rounded-2xl py-4 px-5 shadow-xl flex items-center gap-3">
+            <div className="bg-white/10 rounded-xl w-9 h-9 flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-sans text-white/50 text-[10px] uppercase tracking-widest leading-none">Certified by</span>
+              <span className="font-sans font-semibold text-white text-[13px] leading-none mt-1">OEKO-TEX® Standard 100</span>
+            </div>
           </div>
         </div>
-        
+
       </div>
 
-      {/* Explore arrow at absolute bottom */}
-      <div className="absolute bottom-[32px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-10 hidden lg:flex">
-        <span className="font-sans text-[#657186] text-[12px] uppercase tracking-[1.2px]">Explore</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#657186" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14M19 12l-7 7-7-7" />
-        </svg>
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 z-10">
+        <span className="font-sans text-white/30 text-[10px] uppercase tracking-[2px]">Scroll</span>
+        <div className="w-px h-10 bg-gradient-to-b from-white/30 to-transparent" />
       </div>
     </section>
   );

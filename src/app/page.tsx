@@ -8,6 +8,7 @@ import Reviews from "../components/home/Reviews";
 import Faq from "../components/home/Faq";
 import SubscribeOffer from "../components/home/SubscribeOffer";
 import EmailCaptureModal from "../components/home/EmailCaptureModal";
+import QuickAnswersStrip from "../components/home/QuickAnswersStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default function Home() {
     <div className="flex flex-col w-full">
       <EmailCaptureModal />
       <Hero />
+      <QuickAnswersStrip />
       <ValueProps />
       <ComparisonTable />
       <OurStory />

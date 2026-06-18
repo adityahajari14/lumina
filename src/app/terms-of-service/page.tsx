@@ -138,7 +138,7 @@ const sections = [
       <>
         <p>
           Every Lumina blind is made to order. Unless a different estimate is shown on the product page or in your
-          order communications, orders are usually delivered within <strong>14-18 working days</strong>. This includes
+          order communications, orders are usually delivered within <strong>7-11 working days</strong>. This includes
           the time needed to make your blind, dispatch it, and deliver it to your address.
         </p>
         <p>

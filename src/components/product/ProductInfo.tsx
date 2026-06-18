@@ -369,9 +369,18 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           </span>
         </div>
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="font-sans text-[#657186] text-[13px]">
-            Sale price · free shipping
-          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="font-sans text-[#657186] text-[13px]">
+              Sale price · free shipping
+            </p>
+            <span className="inline-flex items-center gap-1.5 font-sans text-[13px] text-[#657186]">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Delivered in 7–11 business days
+            </span>
+          </div>
           <SaleCountdown variant="pdp" />
         </div>
 

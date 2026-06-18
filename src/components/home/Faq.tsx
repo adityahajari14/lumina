@@ -27,7 +27,7 @@ export default function Faq() {
     },
     {
       question: "How long does delivery take?",
-      answer: "Every Lumina blind is made to order. From the time you place your order, you can expect delivery within 14–18 business days. That window covers production, quality check, and shipping to your door. Once your blind ships, you'll receive a tracking number by email."
+      answer: "Every Lumina blind is made to order. From the time you place your order, you can expect delivery within 7–11 business days. That window covers production, quality check, and shipping to your door. Once your blind ships, you'll receive a tracking number by email."
     },
     {
       question: "How much does shipping cost?",
