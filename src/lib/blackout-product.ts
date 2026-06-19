@@ -1,6 +1,6 @@
-import type { ApiProduct, Product, ProductAccordionItem, ProductFeatures } from '@/types';
+import type { Product, ProductAccordionItem, ProductFeatures } from '@/types';
 import { fetchShopifyProductByHandleMerged } from '@/lib/shopify';
-import { BLACKOUT_PRODUCT_HANDLE } from '@/lib/product-routes';
+import { BLACKOUT_PRODUCT_HANDLE, MEASURING_GUIDE_PATH, FITTING_GUIDE_PATH } from '@/lib/product-routes';
 
 export { BLACKOUT_PRODUCT_HANDLE };
 
@@ -27,66 +27,84 @@ const BLACKOUT_PRODUCT_FEATURES: ProductFeatures = {
   hasRollerCassette: false,
 };
 
-function buildSpecificationsHtml(apiProduct: ApiProduct): string | null {
-  const items = [
-    apiProduct.productType ? `<li><strong>Product type:</strong> ${apiProduct.productType}</li>` : null,
-    apiProduct.vendor ? `<li><strong>Vendor:</strong> ${apiProduct.vendor}</li>` : null,
-    apiProduct.categories[0]?.name ? `<li><strong>Collection:</strong> ${apiProduct.categories[0].name}</li>` : null,
-    apiProduct.tags.length > 0 ? `<li><strong>Tags:</strong> ${apiProduct.tags.map((tag) => tag.name).join(', ')}</li>` : null,
-  ].filter(Boolean);
 
-  if (items.length === 0) {
-    return null;
-  }
-
-  return `<ul>${items.join('')}</ul>`;
-}
-
-function buildAccordionItems(apiProduct: ApiProduct): ProductAccordionItem[] {
-  const items: ProductAccordionItem[] = [];
-
-  if (apiProduct.productDetails || apiProduct.descriptionHtml || apiProduct.description) {
-    items.push({
-      title: 'Product Details',
-      content: apiProduct.description || apiProduct.title,
-      contentHtml:
-        apiProduct.productDetails ||
-        apiProduct.descriptionHtml ||
-        apiProduct.description ||
-        apiProduct.title,
-    });
-  }
-
-  const specificationsHtml = apiProduct.specifications || buildSpecificationsHtml(apiProduct);
-  if (specificationsHtml) {
-    items.push({
-      title: 'Specifications',
-      content: 'Product specifications',
-      contentHtml: specificationsHtml,
-    });
-  }
-
-  if (apiProduct.measuringInstallation) {
-    items.push({
-      title: 'Measuring & Installation',
-      content: apiProduct.measuringInstallation,
-      contentHtml: apiProduct.measuringInstallation,
-    });
-  }
-
-  if (apiProduct.deliveryReturns || apiProduct.estimatedDelivery) {
-    const deliveryContent =
-      apiProduct.deliveryReturns ||
-      `<p><strong>Estimated delivery:</strong> ${apiProduct.estimatedDelivery}</p>`;
-
-    items.push({
-      title: 'Delivery & Returns',
-      content: apiProduct.deliveryReturns || apiProduct.estimatedDelivery || '',
-      contentHtml: deliveryContent,
-    });
-  }
-
-  return items;
+function buildAccordionItems(): ProductAccordionItem[] {
+  return [
+    {
+      title: 'Details',
+      content: 'Triple-layer blackout fabric. No-drill tension bar installation. Custom cut to size.',
+      contentHtml: `<ul>
+        <li><strong>Fabric:</strong> Triple-layer blackout — certified 100% light block</li>
+        <li><strong>Installation:</strong> No-drill spring tension bar — no fixings, no damage</li>
+        <li><strong>Sizing:</strong> Made to order from 20 cm up to 250 cm wide, 30 cm to 300 cm drop</li>
+        <li><strong>Colors:</strong> White, Cream, Graphite, Sky Blue</li>
+        <li><strong>Frame colors:</strong> White or Graphite</li>
+        <li><strong>Opening direction:</strong> Left or right</li>
+        <li><strong>Care:</strong> Spot clean with a damp cloth and mild soap — do not machine wash</li>
+        <li><strong>Tolerance:</strong> +/− 4 mm manufacturing tolerance is standard for made-to-measure blinds</li>
+      </ul>`,
+    },
+    {
+      title: 'Window Compatibility',
+      content: 'Designed for recessed windows with a recess depth of 5 mm to 80 mm.',
+      contentHtml: `<p>The Lumina blackout blind is designed specifically for <strong>recessed windows</strong> — windows that sit inside a recess (reveal) rather than flush with the wall.</p>
+      <ul>
+        <li><strong>Minimum recess depth:</strong> 5 mm</li>
+        <li><strong>Maximum recess depth:</strong> 80 mm</li>
+        <li>The tension bar sits inside the recess, giving edge-to-edge coverage with no light bleed</li>
+        <li>Not suitable for flat-wall mounting or non-recessed frames</li>
+        <li>Works on uPVC, wood, and aluminium window frames</li>
+      </ul>
+      <p>If you're unsure whether your window is compatible, email us a photo at <strong>info@luminablackoutblinds.com</strong> and we'll confirm before you order.</p>`,
+    },
+    {
+      title: 'How to measure',
+      content: 'Measure the width and drop of your window recess to the nearest mm.',
+      contentHtml: `<p>Measure the <strong>inside of your window recess</strong> — not the frame or the glass.</p>
+      <ul>
+        <li><strong>Width:</strong> Measure across the recess at the top, middle, and bottom. Use the <em>smallest</em> measurement.</li>
+        <li><strong>Drop:</strong> Measure from the top of the recess to the window sill. Measure on the left, center, and right and use the <em>largest</em> measurement.</li>
+        <li>Enter your exact dimensions at checkout — we cut every blind to order.</li>
+        <li>A +/− 4 mm manufacturing tolerance is standard and does not affect blackout performance.</li>
+      </ul>
+      <p>Tip: measure twice before ordering. Because every blind is cut to your measurements, we're unable to accept returns on correctly made-to-measure items.</p>
+      <p><a href="${MEASURING_GUIDE_PATH}" target="_blank" rel="noopener noreferrer">View full measuring guide →</a></p>`,
+    },
+    {
+      title: 'How to install',
+      content: 'No tools needed. Fit in under 60 seconds using the spring tension bar.',
+      contentHtml: `<ol>
+        <li>Unbox the blind and extend the tension bar to match your window width.</li>
+        <li>Hold the bar horizontally inside the recess at your desired height.</li>
+        <li>Press both ends firmly against the recess walls until the spring locks into position.</li>
+        <li>Release — the tension holds the blind securely without any fixings or damage.</li>
+        <li>Pull the blind down to your preferred drop. The cassette stays in place as you adjust.</li>
+      </ol>
+      <p>No drilling, no screws, no tools required. The blind can be removed and repositioned without leaving any marks — ideal for rentals.</p>
+      <p><a href="${FITTING_GUIDE_PATH}" target="_blank" rel="noopener noreferrer">View full installation guide →</a></p>`,
+    },
+    {
+      title: 'Shipping & Returns',
+      content: 'Free USA shipping on every order. Delivered in 7–11 business days.',
+      contentHtml: `<p><strong>Shipping</strong></p>
+      <ul>
+        <li>Free shipping on every order — no minimum spend</li>
+        <li>Ships within the United States only</li>
+        <li>Every blind is made to order and dispatched within 3–5 business days</li>
+        <li>Estimated delivery: <strong>7–11 business days</strong> from order date</li>
+        <li>A tracking number is emailed once your blind ships</li>
+        <li>We are unable to deliver to PO boxes, military addresses, or international addresses</li>
+      </ul>
+      <p><strong>Returns</strong></p>
+      <ul>
+        <li>Because every blind is cut to your exact measurements, we do not accept returns on correctly made-to-measure items</li>
+        <li>If your blind arrives damaged or has a confirmed manufacturing fault, contact us within <strong>3 business days</strong> of delivery</li>
+        <li>Email <strong>info@luminablackoutblinds.com</strong> with your order number, a description, and photos</li>
+        <li>Do not install the blind until we've reviewed your claim</li>
+        <li>We aim to respond within 1 business day and will arrange a free replacement if a fault is confirmed</li>
+      </ul>`,
+    },
+  ];
 }
 
 function buildFallbackProduct(): Product {
@@ -152,7 +170,7 @@ export async function getBlackoutProduct(): Promise<Product> {
       vendor: apiProduct.vendor || null,
       productType: apiProduct.productType || null,
       features: BLACKOUT_PRODUCT_FEATURES,
-      accordionItems: buildAccordionItems(apiProduct),
+      accordionItems: buildAccordionItems(),
       reviews: [],
       relatedProducts: [],
     };

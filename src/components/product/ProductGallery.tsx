@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import type { Product } from "@/types";
 
@@ -137,14 +138,14 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
       </div>
 
       {/* Popup Gallery Modal (Amazon Style Box) */}
-      {isModalOpen && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/50 flex items-start justify-center p-4 md:p-8 pt-24 md:pt-28 backdrop-blur-sm"
+      {isModalOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 md:p-8 backdrop-blur-sm"
           onClick={() => setIsModalOpen(false)}
         >
           {/* Centered Modal Container */}
           <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[80vh] h-full flex flex-col overflow-hidden relative"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -199,7 +200,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                     src={images[activeIdx] || images[0]}
                     alt={getAltText(activeIdx)}
                     fill
-                    className="object-contain mix-blend-multiply"
+                    className="object-contain"
                     sizes="(max-width: 1024px) 100vw, 800px"
                     priority
                     loading="eager"
@@ -217,7 +218,8 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

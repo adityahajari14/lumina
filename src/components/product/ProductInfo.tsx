@@ -21,6 +21,7 @@ import type {
   ProductReviewsData,
 } from "@/types";
 import { DEFAULT_CONFIGURATION } from "@/types";
+import ProductAccordion from "@/components/product/ProductAccordion";
 
 const PROMO_CODE = "FINAL15";
 
@@ -613,9 +614,9 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
         </div>
       </div>
 
-      {/* <div id="product-details" className="border-t border-[#dbe0e6]">
+      <div id="product-details" className="border-t border-[#dbe0e6]">
         <ProductAccordion items={product.accordionItems} />
-      </div> */}
+      </div>
 
       {/* Sticky Add to Cart bar */}
       <div

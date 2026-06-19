@@ -26,17 +26,17 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
               {item.title}
             </span>
             <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`text-[#131720] transition-transform duration-300 ${openIndex === i ? 'rotate-180' : ''}`}
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="currentColor"
+              className="text-[#131720] transition-transform duration-300"
             >
-              <polyline points="6 9 12 15 18 9"></polyline>
+              {openIndex === i ? (
+                <path d="M0 6H14V8H0V6Z" />
+              ) : (
+                <path d="M6 6V0H8V6H14V8H8V14H6V8H0V6H6Z" />
+              )}
             </svg>
           </button>
           <div
@@ -44,7 +44,7 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
           >
             {item.contentHtml ? (
               <div
-                className="prose prose-sm max-w-none text-[#657186] [&_p]:my-0 [&_strong]:text-[#131720] [&_ul]:my-0 [&_ul]:pl-5"
+                className="prose prose-sm max-w-none text-[#657186] [&_p]:my-0 [&_strong]:text-[#131720] [&_ul]:my-0 [&_ul]:pl-5 [&_a]:text-[#4051b5] [&_a]:font-medium [&_a]:underline-offset-2 [&_a]:underline hover:[&_a]:text-[#2f3e8a]"
                 dangerouslySetInnerHTML={{ __html: item.contentHtml }}
               />
             ) : (
