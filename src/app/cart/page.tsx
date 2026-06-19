@@ -497,9 +497,8 @@ export default function CartPage() {
       }));
 
       const result = await createCheckout(items);
-      window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
       clearCart();
-      router.replace("/");
+      window.location.href = result.checkoutUrl;
     } catch (error) {
       console.error("Checkout error:", error);
       setCheckoutError(error instanceof Error ? error.message : "Checkout failed");
