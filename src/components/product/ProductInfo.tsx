@@ -168,6 +168,11 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle("sticky-bar-visible", showStickyBar);
+    return () => document.body.classList.remove("sticky-bar-visible");
+  }, [showStickyBar]);
+
   const selectedCustomizations = useMemo(
     () =>
       configToCustomizations({

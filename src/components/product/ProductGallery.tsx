@@ -185,17 +185,17 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
               </div>
 
               {/* Main Image Area */}
-              <div className="flex flex-1 relative bg-[#f8f9fb] items-center justify-center p-4 min-h-[50vh]">
+              <div className="flex flex-1 relative bg-[#f8f9fb] items-center justify-center p-4">
                 <button
                   onClick={() => setActiveIdx(activeIdx > 0 ? activeIdx - 1 : images.length - 1)}
-                  className="absolute left-4 bg-white/80 hover:bg-white p-3 rounded-full text-[#131720] shadow-sm transition-colors z-20"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-3 rounded-full text-[#131720] shadow-sm transition-colors z-20"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
                 </button>
 
-                <div className="relative w-full h-full max-w-3xl flex items-center justify-center">
+                <div className="relative w-full aspect-4/5 md:aspect-video max-w-3xl">
                   <Image
                     src={images[activeIdx] || images[0]}
                     alt={getAltText(activeIdx)}
@@ -209,7 +209,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
 
                 <button
                    onClick={() => setActiveIdx(activeIdx < images.length - 1 ? activeIdx + 1 : 0)}
-                   className="absolute right-4 bg-white/80 hover:bg-white p-3 rounded-full text-[#131720] shadow-sm transition-colors z-20"
+                   className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-3 rounded-full text-[#131720] shadow-sm transition-colors z-20"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>

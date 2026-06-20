@@ -16,10 +16,10 @@ export const BLIND_COLOR_OPTIONS: PriceOption[] = [
     hex: '#fffdd0',
   },
   {
-    id: 'anthracite',
-    name: 'Anthracite',
+    id: 'graphite',
+    name: 'Graphite',
     price: 0,
-    hex: '#36454f',
+    hex: '#53565b',
   },
   {
     id: 'blue',
