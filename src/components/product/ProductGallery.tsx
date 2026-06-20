@@ -43,7 +43,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     <div className="flex flex-col gap-3 w-full self-start z-10">       
       {/* Main Image */}
       <div 
-        className="bg-[#eaedf0] rounded-2xl w-full h-[584px] relative overflow-hidden flex items-center justify-center cursor-pointer"
+        className="bg-[#eaedf0] rounded-2xl w-full aspect-4/5 relative overflow-hidden flex items-center justify-center cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         <Image
