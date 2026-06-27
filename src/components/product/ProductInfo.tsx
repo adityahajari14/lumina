@@ -340,6 +340,16 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     }
   };
 
+  const deliveryRange = useMemo(() => {
+    const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const now = new Date();
+    const early = new Date(now);
+    early.setDate(now.getDate() + 7);
+    const late = new Date(now);
+    late.setDate(now.getDate() + 11);
+    return `Delivered by ${fmt(early)} – ${fmt(late)}`;
+  }, []);
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-[600px] pb-16">
       {/* Header Info */}
@@ -384,7 +394,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
-              Delivered in 7–11 business days
+              {deliveryRange}
             </span>
           </div>
           <SaleCountdown variant="pdp" />
