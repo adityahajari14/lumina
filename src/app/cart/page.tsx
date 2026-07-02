@@ -416,6 +416,7 @@ function CartCustomizationModal({ item, onClose, onSave }: CartCustomizationModa
                     className={`px-4 py-2 rounded-full border text-sm transition-colors ${draftConfig.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
                   >
                     {direction.name}
+                    {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, item.product.currency)})` : ""}
                   </button>
                 ))}
               </div>

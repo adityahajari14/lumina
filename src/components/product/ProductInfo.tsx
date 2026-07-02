@@ -22,6 +22,8 @@ import type {
 } from "@/types";
 import { DEFAULT_CONFIGURATION } from "@/types";
 import ProductAccordion from "@/components/product/ProductAccordion";
+import LuminaFitPromiseModal from "@/components/product/LuminaFitPromiseModal";
+import OpeningDirectionGuideModal from "@/components/product/OpeningDirectionGuideModal";
 
 const PROMO_CODE = "FINAL15";
 
@@ -68,6 +70,8 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [pricingLoaded, setPricingLoaded] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isFitPromiseOpen, setIsFitPromiseOpen] = useState(false);
+  const [isOpeningDirectionGuideOpen, setIsOpeningDirectionGuideOpen] = useState(false);
   const [priceMatrix, setPriceMatrix] = useState<PriceBandMatrix | null>(null);
   const [customizationPricing, setCustomizationPricing] = useState<CustomizationPricing[]>([]);
   const [ratingSummary, setRatingSummary] = useState({
@@ -537,11 +541,22 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
         </div>
 
         <div className="flex flex-col gap-2 mt-2">
-          <span className="font-sans text-[14px]">
+          <span className="font-sans text-[14px] flex items-center gap-1.5">
             <span className="font-semibold text-[#131720]">Opening Direction — </span>
             {selectedOpeningDirection ? (
               <span className="text-[#657186]">{selectedOpeningDirection.name}</span>
             ) : null}
+            <button
+              type="button"
+              onClick={() => setIsOpeningDirectionGuideOpen(true)}
+              className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-[#eaedf0] text-[#4051b5] transition-colors hover:bg-[#4051b5] hover:text-white"
+              aria-label="Learn more about opening direction options"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </button>
           </span>
           <div className="flex flex-wrap gap-2">
             {OPENING_DIRECTION_OPTIONS.map((direction) => (
@@ -551,14 +566,34 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
                 className={`px-4 py-2 rounded-full border text-sm transition-colors ${config.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
               >
                 {direction.name}
+                {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, product.currency)})` : ""}
               </button>
             ))}
           </div>
         </div>
       </div>
 
+      <OpeningDirectionGuideModal
+        open={isOpeningDirectionGuideOpen}
+        onClose={() => setIsOpeningDirectionGuideOpen(false)}
+      />
+
       {/* Add To Cart */}
       <div className="flex flex-col gap-3 mt-6">
+        <button
+          type="button"
+          onClick={() => setIsFitPromiseOpen(true)}
+          className="flex items-center justify-between gap-2 rounded-full border border-[#dbe0e6] bg-[#f9fafb] px-4 py-2.5 text-left transition-colors hover:border-[#131720]"
+        >
+          <span className="flex items-center gap-2 font-sans text-[13px] font-semibold text-[#131720]">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4051b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="8 12.5 10.5 15 16 9" />
+            </svg>
+            The Lumina Fit Promise
+          </span>
+          <span className="font-sans text-[12px] font-medium text-[#4051b5]">Learn More</span>
+        </button>
         <button
           ref={addToCartRef}
           type="button"
@@ -662,6 +697,8 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           </button>
         </div>
       </div>
+
+      <LuminaFitPromiseModal open={isFitPromiseOpen} onClose={() => setIsFitPromiseOpen(false)} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T06:20:06.678Z",
+  "generatedAt": "2026-07-02T14:02:06.430Z",
   "source": "blackout-blinds-db-export",
   "priceBands": [
     {
@@ -1304,15 +1304,15 @@
       "id": "7f854313-efd8-4ee1-a54a-20d6b4e2a8df",
       "category": "opening-direction",
       "optionId": "left-right",
-      "name": "Left & Right",
+      "name": "Left to Right",
       "description": null,
       "sortOrder": 0
     },
     {
       "id": "6e7f6a5c-91b8-4c6b-a57d-d391c64611d4",
       "category": "opening-direction",
-      "optionId": "up-down",
-      "name": "Up & Down",
+      "optionId": "top-down",
+      "name": "Top Down",
       "description": null,
       "sortOrder": 1
     },
@@ -1411,6 +1411,22 @@
       "name": "Yes",
       "description": null,
       "sortOrder": 0
+    },
+    {
+      "id": "59a46296-d15b-4ef9-812f-1542d694fbd2",
+      "category": "opening-direction",
+      "optionId": "right-left",
+      "name": "Right to Left",
+      "description": null,
+      "sortOrder": 2
+    },
+    {
+      "id": "1aae9d1e-09e2-437f-b2c7-170bfbc7577b",
+      "category": "opening-direction",
+      "optionId": "split",
+      "name": "Split",
+      "description": "Sideways (Left & Right) or Top Down / Bottom Up",
+      "sortOrder": 3
     }
   ],
   "customizationPricings": [
@@ -1791,7 +1807,14 @@
       "widthBandId": null,
       "price": 0,
       "isPerUnit": false
+    },
+    {
+      "id": "20a281e6-de9c-43e8-9e80-afea2e11daaf",
+      "customizationOptionId": "1aae9d1e-09e2-437f-b2c7-170bfbc7577b",
+      "widthBandId": null,
+      "price": 35,
+      "isPerUnit": false
     }
   ],
-  "checksum": "48a82462d2315f3352ea87112c7d1e31152a7855880bb23b8e92a26f6b516969"
+  "checksum": "81ffeb0fea534eb269b620e832679379fa790b9226eb25a7f2a4553b70c8bab2"
 }

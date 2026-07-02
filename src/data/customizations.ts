@@ -47,13 +47,23 @@ export const FRAME_COLOR_OPTIONS: PriceOption[] = [
 export const OPENING_DIRECTION_OPTIONS: PriceOption[] = [
   {
     id: 'left-right',
-    name: 'Left & Right',
+    name: 'Left to Right',
     price: 0,
   },
   {
-    id: 'up-down',
-    name: 'Up & Down',
+    id: 'right-left',
+    name: 'Right to Left',
     price: 0,
+  },
+  {
+    id: 'top-down',
+    name: 'Top Down',
+    price: 0,
+  },
+  {
+    id: 'split',
+    name: 'Split',
+    price: 35,
   },
 ];
 

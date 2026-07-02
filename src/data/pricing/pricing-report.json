@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-05-25T06:20:06.678Z",
+  "generatedAt": "2026-07-02T14:02:06.430Z",
   "source": "blackout-blinds-db-export",
-  "checksum": "48a82462d2315f3352ea87112c7d1e31152a7855880bb23b8e92a26f6b516969",
+  "checksum": "81ffeb0fea534eb269b620e832679379fa790b9226eb25a7f2a4553b70c8bab2",
   "counts": {
     "priceBands": 1,
     "widthBands": 14,
     "heightBands": 8,
     "priceCells": 112,
-    "customizationOptions": 60,
-    "customizationPricings": 54
+    "customizationOptions": 62,
+    "customizationPricings": 55
   },
   "priceBandNames": [
     "Eclipsecore Band"
