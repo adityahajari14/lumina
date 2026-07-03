@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
 import ProductFeatures from "./ProductFeatures";
+import ProductKeyFeatures from "./ProductKeyFeatures";
 import ProductWhyLumina from "./ProductWhyLumina";
 import ProductReviews from "./ProductReviews";
 import { trackClarityProductView } from "@/lib/clarity";
@@ -40,6 +41,9 @@ export default function ProductPage({ product, initialReviewsData }: ProductPage
         </div>
       </div>
       </div>
+
+      {/* Key Features Section below */}
+      <ProductKeyFeatures />
 
       {/* Features Section below */}
       <ProductFeatures />
