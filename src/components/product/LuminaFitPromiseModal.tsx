@@ -30,6 +30,18 @@ const SECTIONS: PromiseSection[] = [
     ),
   },
   {
+    title: "30-night home trial",
+    content: (
+      <p>
+        Install your Lumina blind and live with it for up to 30 nights. If it&apos;s not right for
+        your space, you can start a return — even though it was made to your exact measurements,
+        color, and opening direction. Email us at{" "}
+        <span className="font-medium text-[#131720]">info@luminablackoutblinds.com</span> within 30
+        nights of delivery and we&apos;ll walk you through the next steps.
+      </p>
+    ),
+  },
+  {
     title: "1-year manufacturer's guarantee",
     content: (
       <p>
