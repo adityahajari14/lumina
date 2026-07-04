@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import SmartVideo from '../common/SmartVideo';
+import GuaranteeBadges from '@/components/product/GuaranteeBadges';
 import { BLACKOUT_PRODUCT_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-routes';
 
 export default function Hero() {
@@ -22,7 +23,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1280px] px-6 mx-auto grid lg:grid-cols-2 gap-16 items-center py-28 lg:py-36">
+      <div className="relative z-10 w-full max-w-[1280px] px-6 mx-auto grid lg:grid-cols-[1fr_auto_1fr] gap-10 lg:gap-12 items-center py-28 lg:py-36">
 
         {/* Left Column */}
         <div className="flex flex-col items-start gap-7">
@@ -93,6 +94,16 @@ export default function Hero() {
             </svg>
             <span className="font-sans text-[12px] tracking-wide">Free shipping across the USA on every order</span>
           </div>
+
+          {/* Guarantee stamps (small screens) */}
+          <div className="lg:hidden">
+            <GuaranteeBadges variant="light" size={72} layout="row" />
+          </div>
+        </div>
+
+        {/* Middle Column - Guarantee stamps (large screens) */}
+        <div className="hidden lg:flex">
+          <GuaranteeBadges variant="light" size={96} layout="stack" />
         </div>
 
         {/* Right Column - Video */}

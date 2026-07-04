@@ -45,6 +45,16 @@ function buildAccordionItems(): ProductAccordionItem[] {
       </ul>`,
     },
     {
+      title: 'Guarantees',
+      content: '30-night home trial, 1-year manufacturer\'s guarantee, and fault protection on every order.',
+      contentHtml: `<p class="accordion-subheading">30-Night Home Trial</p>
+      <p>Install your Lumina blind and live with it for up to 30 nights. If it's not right for your space, you can start a return — even though it was made to your exact measurements, color, and opening direction. Email <em>info@luminablackoutblinds.com</em> within 30 nights of delivery and we'll walk you through the next steps.</p>
+      <p class="accordion-subheading">1-Year Manufacturer's Guarantee</p>
+      <p>Every blind is covered against manufacturing faults for a full year from delivery. If a fault is confirmed, we'll repair or replace it at no extra cost.</p>
+      <p class="accordion-subheading">Fault Protection on Delivery</p>
+      <p>If your blind arrives damaged or with a manufacturing fault, contact us within <em>3 business days</em> of delivery with your order number and photos. We aim to respond within 1 business day and will arrange a free replacement once the fault is confirmed.</p>`,
+    },
+    {
       title: 'Window Compatibility',
       content: 'Designed for recessed windows with a recess depth of 5 mm to 80 mm.',
       contentHtml: `<p>The Lumina blackout blind is designed specifically for <strong>recessed windows</strong> — windows that sit inside a recess (reveal) rather than flush with the wall.</p>
@@ -86,16 +96,16 @@ function buildAccordionItems(): ProductAccordionItem[] {
     {
       title: 'Shipping & Returns',
       content: 'Free USA shipping on every order. Delivered in 7–11 business days.',
-      contentHtml: `<p><strong>Shipping</strong></p>
+      contentHtml: `<p class="accordion-subheading">Shipping</p>
       <ul>
         <li>Free shipping on every order — no minimum spend</li>
         <li>Ships within the United States only</li>
         <li>Every blind is made to order and dispatched within 3–5 business days</li>
-        <li>Estimated delivery: <strong>7–11 business days</strong> from order date</li>
+        <li>Estimated delivery: <em>7–11 business days</em> from order date</li>
         <li>A tracking number is emailed once your blind ships</li>
         <li>We are unable to deliver to PO boxes, military addresses, or international addresses</li>
       </ul>
-      <p><strong>Returns</strong></p>
+      <p class="accordion-subheading">Returns</p>
       <ul>
         <li>Because every blind is cut to your exact measurements, we do not accept returns on correctly made-to-measure items</li>
         <li>If your blind arrives damaged or has a confirmed manufacturing fault, contact us within <strong>3 business days</strong> of delivery</li>

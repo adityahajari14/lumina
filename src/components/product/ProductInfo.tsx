@@ -24,6 +24,7 @@ import { DEFAULT_CONFIGURATION } from "@/types";
 import ProductAccordion from "@/components/product/ProductAccordion";
 import LuminaFitPromiseModal from "@/components/product/LuminaFitPromiseModal";
 import OpeningDirectionGuideModal from "@/components/product/OpeningDirectionGuideModal";
+import GuaranteeBadges from "@/components/product/GuaranteeBadges";
 
 const PROMO_CODE = "FINAL15";
 
@@ -403,6 +404,8 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           </div>
           <SaleCountdown variant="pdp" />
         </div>
+
+        <GuaranteeBadges />
 
         {/* Sale offer block */}
         <div className="rounded-xl border border-[#131720] overflow-hidden">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { NewsletterSubscriptionResult } from "@/types";
+import GuaranteeBadges from "@/components/product/GuaranteeBadges";
 
 const DELAY_MS = 3000;
 
@@ -115,6 +116,8 @@ export default function EmailCaptureModal() {
                 Join thousands who transformed their sleep with Lumina blackout blinds.
               </p>
             </div>
+
+            <GuaranteeBadges variant="light" size={80} layout="row" />
 
             <div className="h-px bg-white/10" />
 

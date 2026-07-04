@@ -40,11 +40,11 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
             </svg>
           </button>
           <div
-            className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-96 pb-5 opacity-100' : 'max-h-0 opacity-0'}`}
+            className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-160 pb-5 opacity-100' : 'max-h-0 opacity-0'}`}
           >
             {item.contentHtml ? (
               <div
-                className="prose prose-sm max-w-none text-[#657186] [&_p]:my-0 [&_strong]:text-[#131720] [&_ul]:my-0 [&_ul]:pl-5 [&_a]:text-[#4051b5] [&_a]:font-medium [&_a]:underline-offset-2 [&_a]:underline hover:[&_a]:text-[#2f3e8a]"
+                className="prose prose-sm max-w-none text-[#657186] [&_p]:my-0 [&_strong]:text-[#131720] [&_em]:font-medium [&_em]:not-italic [&_em]:text-[#131720] [&_ul]:my-0 [&_ul]:pl-5 [&_a]:text-[#4051b5] [&_a]:font-medium [&_a]:underline-offset-2 [&_a]:underline hover:[&_a]:text-[#2f3e8a] [&_.accordion-subheading]:mt-4 [&_.accordion-subheading]:font-playfair [&_.accordion-subheading]:font-medium [&_.accordion-subheading]:text-[#131720] [&_.accordion-subheading:first-child]:mt-0"
                 dangerouslySetInnerHTML={{ __html: item.contentHtml }}
               />
             ) : (
