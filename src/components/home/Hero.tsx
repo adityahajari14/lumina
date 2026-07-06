@@ -96,8 +96,8 @@ export default function Hero() {
           </div>
 
           {/* Guarantee stamps (small screens) */}
-          <div className="lg:hidden">
-            <GuaranteeBadges variant="light" size={72} layout="row" />
+          <div className="lg:hidden w-full overflow-x-auto">
+            <GuaranteeBadges variant="light" size={84} layout="row" />
           </div>
         </div>
 

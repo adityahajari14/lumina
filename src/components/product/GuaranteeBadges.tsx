@@ -44,7 +44,7 @@ interface StampBadgeProps {
 export function StampBadge({ badge, variant = "dark", size = 112 }: StampBadgeProps) {
   const colorClass = variant === "light" ? "text-white" : "text-[#131720]";
   return (
-    <div className="flex flex-col items-center gap-1.5 text-center">
+    <div className="flex flex-col items-center gap-1.5 text-center shrink-0">
       <svg width={size} height={size} viewBox="0 0 100 100" className={colorClass}>
         <path d={SCALLOP_EDGE} fill="none" stroke="currentColor" strokeWidth="1.1" />
         <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.6" />
@@ -92,7 +92,7 @@ interface GuaranteeBadgesProps {
 const LAYOUT_CLASSES: Record<NonNullable<GuaranteeBadgesProps["layout"]>, string> = {
   grid: "grid grid-cols-4 gap-2 py-2",
   "grid-2": "grid grid-cols-2 gap-3",
-  row: "flex flex-row flex-wrap gap-4 py-2",
+  row: "flex flex-row flex-nowrap gap-4 py-2",
   stack: "flex flex-col gap-4",
 };
 
