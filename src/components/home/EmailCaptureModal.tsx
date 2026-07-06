@@ -194,6 +194,10 @@ export default function EmailCaptureModal() {
                 <p className="font-sans text-[12px] text-red-400 -mt-4">{errorMessage}</p>
               )}
 
+              <div className="md:hidden w-full overflow-x-auto -mt-2">
+                <GuaranteeBadges variant="light" size={56} layout="row" />
+              </div>
+
               <p className="font-sans text-[11px] text-white/40 -mt-4">
                 By continuing you agree to receive email updates. Unsubscribe anytime.
               </p>
