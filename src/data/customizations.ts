@@ -13,7 +13,7 @@ export const BLIND_COLOR_OPTIONS: PriceOption[] = [
     id: 'cream',
     name: 'Cream',
     price: 0,
-    hex: '#fffdd0',
+    hex: '#E6E5DE',
   },
   {
     id: 'graphite',
