@@ -2,6 +2,7 @@ import { calculateProductPrice, type PricingRequest } from './pricing.service';
 import { getAdminApiUrl, getAdminHeaders, validateShopifyConfig } from './shopify-admin';
 import { getCachedProduct } from './product-cache';
 import { BLACKOUT_PRODUCT_HANDLE } from '@/lib/product-routes';
+import { recordCheckoutStarted } from './abandoned-checkout.service';
 
 // ============================================
 // Types
@@ -41,6 +42,14 @@ export interface CreateCheckoutRequest {
   items: CheckoutItemRequest[];
   customerEmail?: string;
   note?: string;
+  sessionId?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  referrer?: string;
+  deviceType?: string;
+  userAgent?: string;
+  sessionDurationSeconds?: number;
 }
 
 export interface CreateCheckoutResponse {
@@ -53,6 +62,16 @@ export interface CreateCheckoutResponse {
     quantity: number;
   }[];
   subtotal: number;
+}
+
+interface AbandonedCheckoutLineItem {
+  handle: string;
+  title: string;
+  quantity: number;
+  calculatedPrice: number;
+  widthInches: number;
+  heightInches: number;
+  configuration: CheckoutItemRequest['configuration'];
 }
 
 interface ShopifyDraftOrderLineItem {
@@ -216,6 +235,7 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
 
   const lineItems: ShopifyDraftOrderLineItem[] = [];
   const responseLineItems: CreateCheckoutResponse['lineItems'] = [];
+  const abandonedCheckoutItems: AbandonedCheckoutLineItem[] = [];
   let subtotal = 0;
 
   for (const item of request.items) {
@@ -305,6 +325,16 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
       quantity: item.quantity,
     });
 
+    abandonedCheckoutItems.push({
+      handle: item.handle,
+      title: lineItemTitle,
+      quantity: item.quantity,
+      calculatedPrice: itemPrice,
+      widthInches: item.widthInches,
+      heightInches: item.heightInches,
+      configuration: item.configuration,
+    });
+
     subtotal += itemPrice * item.quantity;
   }
 
@@ -378,6 +408,26 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
   const draftOrder = draftOrderCreate?.draftOrder;
   if (!draftOrder || !draftOrder.invoiceUrl) {
     throw new CheckoutError('Failed to create Shopify draft order: no invoice URL returned', 500);
+  }
+
+  try {
+    await recordCheckoutStarted({
+      customerEmail: request.customerEmail,
+      sessionId: request.sessionId,
+      draftOrderId: draftOrder.id.toString(),
+      checkoutUrl: draftOrder.invoiceUrl,
+      subtotal,
+      items: abandonedCheckoutItems,
+      utmSource: request.utmSource,
+      utmMedium: request.utmMedium,
+      utmCampaign: request.utmCampaign,
+      referrer: request.referrer,
+      deviceType: request.deviceType,
+      userAgent: request.userAgent,
+      sessionDurationSeconds: request.sessionDurationSeconds,
+    });
+  } catch (error) {
+    console.error('[OrderService] Failed to record abandoned-checkout snapshot:', error);
   }
 
   return {

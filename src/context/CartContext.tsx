@@ -6,6 +6,7 @@ import { Product, ProductConfiguration, Cart, CartItem, CartContextType } from '
 import { trackClarityAddToCart } from '@/lib/clarity';
 import { trackAddToCart } from '@/lib/meta-pixel';
 import { trackShopifyAddToCart } from '@/lib/shopify-analytics';
+import { trackStoreAddToCart } from '@/lib/store-events';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -100,6 +101,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     trackClarityAddToCart(product);
     trackAddToCart(product);
     trackShopifyAddToCart(product);
+    trackStoreAddToCart(product, configuration);
     router.push('/cart');
   };
 

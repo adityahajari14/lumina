@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import {
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { trackClarityInitiateCheckout } from "@/lib/clarity";
 import { trackInitiateCheckout } from "@/lib/meta-pixel";
+import { getStoreSessionContext, trackStoreCartView, trackStoreCheckoutInitiated } from "@/lib/store-events";
 import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
 import {
   BLIND_COLOR_LABELS,
@@ -465,6 +466,13 @@ export default function CartPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const hasTrackedCartViewRef = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedCartViewRef.current || cart.items.length === 0) return;
+    hasTrackedCartViewRef.current = true;
+    trackStoreCartView(cart.items, cart.total);
+  }, [cart]);
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
@@ -473,6 +481,7 @@ export default function CartPage() {
     const currency = cart.items[0]?.product.currency || "USD";
     trackClarityInitiateCheckout(cart.items);
     trackInitiateCheckout(cart.items, currency);
+    trackStoreCheckoutInitiated(cart.items, cart.total);
 
     try {
       const items: CheckoutItemRequest[] = cart.items.map((item) => ({
@@ -497,7 +506,7 @@ export default function CartPage() {
         },
       }));
 
-      const result = await createCheckout(items);
+      const result = await createCheckout(items, undefined, getStoreSessionContext());
       clearCart();
       window.location.href = result.checkoutUrl;
     } catch (error) {

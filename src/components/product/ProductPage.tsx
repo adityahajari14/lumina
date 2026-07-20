@@ -10,6 +10,7 @@ import ProductReviews from "./ProductReviews";
 import { trackClarityProductView } from "@/lib/clarity";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { trackShopifyProductView } from "@/lib/shopify-analytics";
+import { trackStoreProductView } from "@/lib/store-events";
 import type { Product, ProductReviewsData } from "@/types";
 
 interface ProductPageProps {
@@ -22,6 +23,7 @@ export default function ProductPage({ product, initialReviewsData }: ProductPage
     trackClarityProductView(product);
     trackViewContent(product);
     trackShopifyProductView(product);
+    trackStoreProductView(product);
   }, [product]);
 
   return (

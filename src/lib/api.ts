@@ -6,6 +6,7 @@ import {
   PriceValidationResponse,
   PricingRequest,
 } from '@/types';
+import type { StoreSessionContext } from '@/lib/store-events';
 
 const SERVER_API_CACHE_REVALIDATE_SECONDS =
   Number(process.env.SERVER_API_CACHE_REVALIDATE_SECONDS || 3_600);
@@ -71,11 +72,23 @@ export async function validateCartPrice(
 
 export async function createCheckout(
   items: CheckoutItemRequest[],
-  customerEmail?: string
+  customerEmail?: string,
+  session?: StoreSessionContext | null
 ): Promise<CheckoutResponse> {
   const response = await apiFetch<ApiResponse<CheckoutResponse>>('/api/orders/create-checkout', {
     method: 'POST',
-    body: JSON.stringify({ items, customerEmail }),
+    body: JSON.stringify({
+      items,
+      customerEmail,
+      sessionId: session?.sessionId,
+      utmSource: session?.utmSource,
+      utmMedium: session?.utmMedium,
+      utmCampaign: session?.utmCampaign,
+      referrer: session?.referrer,
+      deviceType: session?.deviceType,
+      userAgent: session?.userAgent,
+      sessionDurationSeconds: session?.sessionDurationSeconds,
+    }),
   });
 
   if (!response.success) {
