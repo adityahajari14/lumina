@@ -3,6 +3,7 @@ import LogoutButton from './LogoutButton';
 import FilterBar from './FilterBar';
 import Pagination from './Pagination';
 import ExportButton from './ExportButton';
+import { CartItemCard, CheckoutItemCard } from './ItemDetails';
 import {
   listAbandonedCheckouts,
   type AbandonedCheckoutRecord,
@@ -377,22 +378,12 @@ export default async function AbandonedCheckoutsPage({
                           {checkout.customerPhone && <div className="text-xs text-[#8c9196]">{checkout.customerPhone}</div>}
                           <AttributionLine record={checkout} />
                         </td>
-                        <td className="px-4 py-3">
-                          <ul className="flex flex-col gap-2.5">
+                        <td className="px-4 py-3 min-w-[280px]">
+                          <div className="flex flex-col">
                             {checkout.items.map((item, idx) => (
-                              <li key={idx} className="flex flex-col gap-0.5">
-                                <span className="text-[13px] font-medium text-[#202223]">
-                                  {item.quantity} × {item.title}
-                                </span>
-                                <span className="text-xs text-[#6d7175]">
-                                  {item.widthInches}&quot; W × {item.heightInches}&quot; H · {money.format(item.calculatedPrice)} each
-                                </span>
-                                <span className="text-xs text-[#6d7175]">
-                                  {formatConfiguration(item.configuration as Record<string, unknown>)}
-                                </span>
-                              </li>
+                              <CheckoutItemCard key={idx} item={item} isLast={idx === checkout.items.length - 1} />
                             ))}
-                          </ul>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-[13px] font-medium text-[#202223] text-right whitespace-nowrap">
                           {money.format(checkout.subtotal)}
@@ -447,20 +438,12 @@ export default async function AbandonedCheckoutsPage({
                           <div>{cart.customerName || cart.customerEmail || <span className="text-[#8c9196]">Anonymous</span>}</div>
                           <AttributionLine record={cart} />
                         </td>
-                        <td className="px-4 py-3">
-                          <ul className="flex flex-col gap-2.5">
+                        <td className="px-4 py-3 min-w-[280px]">
+                          <div className="flex flex-col">
                             {cart.items.map((item, idx) => (
-                              <li key={idx} className="flex flex-col gap-0.5">
-                                <span className="text-[13px] font-medium text-[#202223]">
-                                  {item.quantity} × {item.title}
-                                </span>
-                                <span className="text-xs text-[#6d7175]">{money.format(item.price)} each</span>
-                                {item.configuration && (
-                                  <span className="text-xs text-[#6d7175]">{formatConfiguration(item.configuration)}</span>
-                                )}
-                              </li>
+                              <CartItemCard key={idx} item={item} isLast={idx === cart.items.length - 1} />
                             ))}
-                          </ul>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-[13px] font-medium text-[#202223] text-right whitespace-nowrap">
                           {money.format(cart.subtotal)}
