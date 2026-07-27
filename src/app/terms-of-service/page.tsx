@@ -34,9 +34,10 @@ const sections = [
     content: (
       <>
         <p>
-          The images are purely for illustration purposes only. We aim to manufacture the blinds as close as possible
-          to the illustrations provided. As all our blinds are uniquely handcrafted, we do not compromise on quality,
-          and all our products are manufactured to a high-quality standard.
+          Product images are for illustration purposes only. Actual fabric colours and shades may vary slightly due
+          to screen settings, lighting, and photography. We aim to manufacture the blinds as close as possible to the
+          illustrations provided. As all our blinds are uniquely handcrafted, we do not compromise on quality, and
+          all our products are manufactured to a high-quality standard.
         </p>
         <p>
           We make every reasonable effort to display products, colours, textures, dimensions, descriptions, prices, and
