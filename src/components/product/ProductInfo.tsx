@@ -65,9 +65,18 @@ function ProductRatingStars({ rating }: { rating: number }) {
   );
 }
 
+type CustomizationField = "size" | "blindColor" | "frameColor" | "openingDirection";
+
+const FIELD_ORDER: CustomizationField[] = ["size", "blindColor", "frameColor", "openingDirection"];
+
 export default function ProductInfo({ product, initialReviewsData }: ProductInfoProps) {
   const { addToCart } = useCart();
   const addToCartRef = useRef<HTMLButtonElement>(null);
+  const sizeSectionRef = useRef<HTMLDivElement>(null);
+  const blindColorSectionRef = useRef<HTMLDivElement>(null);
+  const frameColorSectionRef = useRef<HTMLDivElement>(null);
+  const openingDirectionSectionRef = useRef<HTMLDivElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<CustomizationField, string>>>({});
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [pricingLoaded, setPricingLoaded] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -276,6 +285,15 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     return { min, max, placeholder: `${min}-${max}` };
   }, [sizeRanges, unit]);
 
+  const clearFieldError = (field: CustomizationField) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   const updateMeasurementUnit = (nextUnit: "cm" | "in") => {
     setConfig((prev) => ({
       ...prev,
@@ -290,23 +308,61 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     (direction) => direction.id === config.openingDirection
   );
 
-  const hasValidSize =
-    !product.features.hasSize ||
-    (config.width >= widthLimits.min &&
-      config.width <= widthLimits.max &&
-      config.height >= heightLimits.min &&
-      config.height <= heightLimits.max);
+  const sectionRefs: Record<CustomizationField, React.RefObject<HTMLDivElement | null>> = {
+    size: sizeSectionRef,
+    blindColor: blindColorSectionRef,
+    frameColor: frameColorSectionRef,
+    openingDirection: openingDirectionSectionRef,
+  };
 
-  const hasRequiredCustomizations =
-    (!product.features.hasBlindColor || Boolean(config.blindColor)) &&
-    (!product.features.hasFrameColor || Boolean(config.frameColor)) &&
-    (!product.features.hasOpeningDirection || Boolean(config.openingDirection));
+  const validateConfiguration = () => {
+    const errors: Partial<Record<CustomizationField, string>> = {};
 
-  const isAddToCartDisabled =
-    isAddingToCart || !pricingLoaded || !hasValidSize || !hasRequiredCustomizations;
+    if (product.features.hasSize) {
+      if (!config.width || !config.height) {
+        errors.size = "Please enter your window width and height.";
+      } else if (
+        config.width < widthLimits.min ||
+        config.width > widthLimits.max ||
+        config.height < heightLimits.min ||
+        config.height > heightLimits.max
+      ) {
+        errors.size = `Width must be ${widthLimits.min}-${widthLimits.max} ${unit} and height ${heightLimits.min}-${heightLimits.max} ${unit}.`;
+      }
+    }
+
+    if (product.features.hasBlindColor && !config.blindColor) {
+      errors.blindColor = "Please select a blind color.";
+    }
+
+    if (product.features.hasFrameColor && !config.frameColor) {
+      errors.frameColor = "Please select a frame color.";
+    }
+
+    if (product.features.hasOpeningDirection && !config.openingDirection) {
+      errors.openingDirection = "Please select an opening direction.";
+    }
+
+    return errors;
+  };
+
+  const isAddToCartDisabled = isAddingToCart || !pricingLoaded;
 
   const handleAddToCart = async () => {
     if (isAddToCartDisabled) return;
+
+    const errors = validateConfiguration();
+    setFieldErrors(errors);
+
+    const firstInvalidField = FIELD_ORDER.find((field) => errors[field]);
+    if (firstInvalidField) {
+      const section = sectionRefs[firstInvalidField].current;
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "center" });
+        section.querySelector<HTMLElement>("input, button")?.focus({ preventScroll: true });
+      }
+      return;
+    }
 
     setIsAddingToCart(true);
 
@@ -452,7 +508,10 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       </div>
 
       {/* Measure */}
-      <div className="flex flex-col gap-4 mt-6">
+      <div
+        ref={sizeSectionRef}
+        className={`flex flex-col gap-4 mt-6 scroll-mt-28 ${fieldErrors.size ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+      >
         <div className="flex items-center justify-between">
           <span className="font-sans font-semibold text-[14px] text-[#131720]">
             Measure your window
@@ -483,9 +542,11 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
               value={config.width || ""}
               onChange={(e) => {
                 setConfig((prev) => ({ ...prev, width: Number(e.target.value) || 0 }));
+                clearFieldError("size");
               }}
               placeholder={widthLimits.placeholder}
-              className="border border-[#dbe0e6] bg-[#f9fafb] rounded-xl px-3 py-2.5 text-sm text-[#131720] outline-none focus:border-[#131720]"
+              aria-invalid={Boolean(fieldErrors.size)}
+              className={`border bg-[#f9fafb] rounded-xl px-3 py-2.5 text-sm text-[#131720] outline-none ${fieldErrors.size ? "border-[#dc2626] focus:border-[#dc2626]" : "border-[#dbe0e6] focus:border-[#131720]"}`}
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -497,17 +558,28 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
               value={config.height || ""}
               onChange={(e) => {
                 setConfig((prev) => ({ ...prev, height: Number(e.target.value) || 0 }));
+                clearFieldError("size");
               }}
               placeholder={heightLimits.placeholder}
-              className="border border-[#dbe0e6] bg-[#f9fafb] rounded-xl px-3 py-2.5 text-sm text-[#131720] outline-none focus:border-[#131720]"
+              aria-invalid={Boolean(fieldErrors.size)}
+              className={`border bg-[#f9fafb] rounded-xl px-3 py-2.5 text-sm text-[#131720] outline-none ${fieldErrors.size ? "border-[#dc2626] focus:border-[#dc2626]" : "border-[#dbe0e6] focus:border-[#131720]"}`}
             />
           </div>
         </div>
+
+        {fieldErrors.size ? (
+          <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+            {fieldErrors.size}
+          </p>
+        ) : null}
       </div>
 
       {/* Colors */}
       <div className="flex flex-col gap-4 mt-6">
-        <div className="flex flex-col gap-2">
+        <div
+          ref={blindColorSectionRef}
+          className={`flex flex-col gap-2 scroll-mt-28 ${fieldErrors.blindColor ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+        >
           <span className="font-sans text-[14px]">
             <span className="font-semibold text-[#131720]">Blind Color — </span>
             <span className="text-[#657186]">{selectedBlindColor?.name}</span>
@@ -516,16 +588,27 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
             {BLIND_COLOR_OPTIONS.map((color) => (
               <button
                 key={color.id}
-                onClick={() => setConfig((prev) => ({ ...prev, blindColor: color.id }))}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.blindColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, blindColor: color.id }));
+                  clearFieldError("blindColor");
+                }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.blindColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : fieldErrors.blindColor ? 'ring-1 ring-[#dc2626] hover:ring-[#131720]/50' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
                 style={{ backgroundColor: color.hex }}
                 aria-label={`Select ${color.name}`}
               />
             ))}
           </div>
+          {fieldErrors.blindColor ? (
+            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+              {fieldErrors.blindColor}
+            </p>
+          ) : null}
         </div>
 
-        <div className="flex flex-col gap-2 mt-2">
+        <div
+          ref={frameColorSectionRef}
+          className={`flex flex-col gap-2 mt-2 scroll-mt-28 ${fieldErrors.frameColor ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+        >
           <span className="font-sans text-[14px]">
             <span className="font-semibold text-[#131720]">Frame Color — </span>
             <span className="text-[#657186]">{selectedFrameColor?.name}</span>
@@ -534,16 +617,27 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
             {FRAME_COLOR_OPTIONS.map((color) => (
               <button
                 key={color.id}
-                onClick={() => setConfig((prev) => ({ ...prev, frameColor: color.id }))}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.frameColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, frameColor: color.id }));
+                  clearFieldError("frameColor");
+                }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.frameColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : fieldErrors.frameColor ? 'ring-1 ring-[#dc2626] hover:ring-[#131720]/50' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
                 style={{ backgroundColor: color.hex }}
                 aria-label={`Select ${color.name}`}
               />
             ))}
           </div>
+          {fieldErrors.frameColor ? (
+            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+              {fieldErrors.frameColor}
+            </p>
+          ) : null}
         </div>
 
-        <div className="flex flex-col gap-2 mt-2">
+        <div
+          ref={openingDirectionSectionRef}
+          className={`flex flex-col gap-2 mt-2 scroll-mt-28 ${fieldErrors.openingDirection ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+        >
           <span className="font-sans text-[14px] flex items-center gap-1.5">
             <span className="font-semibold text-[#131720]">Opening Direction — </span>
             {selectedOpeningDirection ? (
@@ -565,14 +659,22 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
             {OPENING_DIRECTION_OPTIONS.map((direction) => (
               <button
                 key={direction.id}
-                onClick={() => setConfig((prev) => ({ ...prev, openingDirection: direction.id }))}
-                className={`px-4 py-2 rounded-full border text-sm transition-colors ${config.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, openingDirection: direction.id }));
+                  clearFieldError("openingDirection");
+                }}
+                className={`px-4 py-2 rounded-full border text-sm transition-colors ${config.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : fieldErrors.openingDirection ? "border-[#dc2626] text-[#657186] hover:border-[#131720]" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
               >
                 {direction.name}
                 {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, product.currency)})` : ""}
               </button>
             ))}
           </div>
+          {fieldErrors.openingDirection ? (
+            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+              {fieldErrors.openingDirection}
+            </p>
+          ) : null}
         </div>
       </div>
 
