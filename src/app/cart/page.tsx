@@ -18,6 +18,7 @@ import { trackClarityInitiateCheckout } from "@/lib/clarity";
 import { trackInitiateCheckout } from "@/lib/meta-pixel";
 import { getStoreSessionContext, trackStoreCartView, trackStoreCheckoutInitiated } from "@/lib/store-events";
 import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
+import LuminaFitPromiseModal from "@/components/product/LuminaFitPromiseModal";
 import {
   BLIND_COLOR_LABELS,
   BLIND_COLOR_OPTIONS,
@@ -466,6 +467,7 @@ export default function CartPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const [isFitPromiseOpen, setIsFitPromiseOpen] = useState(false);
   const hasTrackedCartViewRef = useRef(false);
 
   useEffect(() => {
@@ -721,9 +723,24 @@ export default function CartPage() {
               )}
 
               <button
+                type="button"
+                onClick={() => setIsFitPromiseOpen(true)}
+                className="flex items-center justify-between gap-2 rounded-full border border-[#dbe0e6] bg-[#f9fafb] px-4 py-2.5 text-left transition-colors hover:border-[#131720]"
+              >
+                <span className="flex items-center gap-2 font-sans text-[13px] font-semibold text-[#131720]">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4051b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="8 12.5 10.5 15 16 9" />
+                  </svg>
+                  The Lumina Fit Promise
+                </span>
+                <span className="font-sans text-[12px] font-medium text-[#4051b5]">Learn More</span>
+              </button>
+
+              <button
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
-                className="w-full bg-[#131720] hover:bg-black disabled:bg-[#9aa3af] text-[#f9fafb] font-sans font-medium text-[16px] py-4 rounded-full transition-colors flex items-center justify-center gap-2 mt-2"
+                className="w-full bg-[#131720] hover:bg-black disabled:bg-[#9aa3af] text-[#f9fafb] font-sans font-medium text-[16px] py-4 rounded-full transition-colors flex items-center justify-center gap-2"
               >
                 {isCheckingOut ? "Processing..." : "Proceed to Checkout"}
                 {!isCheckingOut && (
@@ -758,6 +775,8 @@ export default function CartPage() {
         onClose={() => setEditingItem(null)}
         onSave={updateCartItemConfiguration}
       />
+
+      <LuminaFitPromiseModal open={isFitPromiseOpen} onClose={() => setIsFitPromiseOpen(false)} />
     </div>
   );
 }
