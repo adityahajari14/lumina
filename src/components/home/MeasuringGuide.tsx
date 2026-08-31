@@ -50,7 +50,7 @@ export default function MeasuringGuide() {
                   Measure the inside width of your window recess at three points — top, middle, and bottom. Use the smallest measurement.
                 </p>
                 <p className="font-sans font-medium text-[#4051b5] text-[12px] leading-[16px] mt-1">
-                  💡 For recess fit: subtract 5mm for clearance.
+                  💡 For recess fit: subtract 3mm from smallest width measurement so we have a perfect fit.
                 </p>
               </div>
             </div>
@@ -68,7 +68,7 @@ export default function MeasuringGuide() {
                   Measure the full height of the window recess from top to sill. Measure on both sides and use the smaller figure.
                 </p>
                 <p className="font-sans font-medium text-[#4051b5] text-[12px] leading-[16px] mt-1">
-                  💡 For exact sill coverage, add 20mm to your drop.
+                  💡 For exact sill coverage, subtract 3mm from smallest drop measurement so we have a perfect fit.
                 </p>
               </div>
             </div>
