@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/returns-refunds-policy" },
   title: 'Returns & Refunds Policy - Lumina Blackout Blinds',
   description:
     'Read the Lumina Blackout Blinds returns and refunds policy for made-to-measure blinds, including damaged items, faulty goods, replacements, cancellations, and refunds.',

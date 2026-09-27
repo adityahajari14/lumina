@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import type { ProductReview, ProductReviewMedia } from "@/types";
 
 const JUDGEME_API_BASE_URL = "https://judge.me/api/v1";
@@ -280,24 +281,26 @@ async function judgeMeFetch<T>(endpoint: string, init?: RequestInit): Promise<T>
   const response = await fetch(`${JUDGEME_API_BASE_URL}${endpoint}`, {
     ...init,
     cache: "no-store",
+    signal: init?.signal || AbortSignal.timeout(8_000),
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `Judge.me request failed with status ${response.status}`);
+    throw new Error(`Judge.me request failed with status ${response.status}`);
   }
 
   return response.json() as Promise<T>;
 }
 
-export async function fetchJudgeMeReviews(product: JudgeMeProductRef) {
+async function fetchUncachedJudgeMeReviews(product: JudgeMeProductRef) {
   const config = getJudgeMeConfig();
   if (!config.apiToken || !config.shopDomain) return null;
 
   const allReviews: JudgeMeReview[] = [];
   let page = 1;
 
+  const deadline = AbortSignal.timeout(15_000);
   while (true) {
+    if (page > 100) throw new Error("Review pagination limit reached");
     const params = new URLSearchParams({
       api_token: config.apiToken,
       shop_domain: normalizeDomain(config.shopDomain),
@@ -306,7 +309,7 @@ export async function fetchJudgeMeReviews(product: JudgeMeProductRef) {
       published: "true",
     });
 
-    const data = await judgeMeFetch<JudgeMeReviewsResponse>(`/reviews?${params}`);
+    const data = await judgeMeFetch<JudgeMeReviewsResponse>(`/reviews?${params}`, { signal: deadline });
     const reviews = Array.isArray(data.reviews) ? data.reviews : [];
 
     if (reviews.length === 0) break;
@@ -356,3 +359,9 @@ export async function createJudgeMeReview(submission: JudgeMeReviewSubmission) {
 
   return normalizeReview(data.review || {}, 0);
 }
+
+const cachedReviews = unstable_cache(fetchUncachedJudgeMeReviews, ['judgeme-reviews-v1'], {
+  revalidate: 300, tags: ['product-reviews'],
+});
+
+export const fetchJudgeMeReviews = cachedReviews;

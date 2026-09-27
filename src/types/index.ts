@@ -183,6 +183,7 @@ export interface Cart {
 
 export interface CartContextType {
   cart: Cart;
+  isCartReady: boolean;
   addToCart: (product: Product, configuration: ProductConfiguration) => void;
   removeFromCart: (itemId: string) => void;
   updateCartItemConfiguration: (
@@ -192,7 +193,7 @@ export interface CartContextType {
   ) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
-  markCheckoutPending: (draftOrderId: string) => void;
+  markCheckoutPending: (draftOrderId: string, items: CartItem[]) => void;
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;

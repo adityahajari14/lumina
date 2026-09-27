@@ -21,7 +21,7 @@ import {
 } from '@/lib/server/events.service';
 
 const CHECKOUT_TABS = ['all', 'pending', 'abandoned', 'converted'] as const;
-const CART_TABS = ['all', 'active', 'abandoned', 'converted'] as const;
+const CART_TABS = ['all', 'active', 'abandoned', 'checkout_started', 'cleared', 'converted'] as const;
 const TYPE_TABS = ['checkouts', 'carts'] as const;
 const PAGE_SIZE = 20;
 
@@ -74,14 +74,17 @@ function Badge({ tone, children }: { tone: 'success' | 'critical' | 'attention' 
   );
 }
 
-function checkoutStatusBadge(status: AbandonedCheckoutRecord['status']) {
-  if (status === 'converted') return <Badge tone="success">Converted</Badge>;
+function checkoutStatusBadge(status: AbandonedCheckoutRecord['status'], verifiedAt: string | null) {
+  if (status === 'converted' && !verifiedAt) return <Badge tone="attention">Payment unverified (legacy)</Badge>;
+  if (status === 'converted') return <Badge tone="success">Paid</Badge>;
   if (status === 'abandoned') return <Badge tone="critical">Abandoned</Badge>;
   return <Badge tone="attention">Pending</Badge>;
 }
 
 function cartStatusBadge(status: AbandonedCartRecord['status']) {
-  if (status === 'converted') return <Badge tone="success">Converted</Badge>;
+  if (status === 'checkout_started') return <Badge tone="attention">Checkout started</Badge>;
+  if (status === 'cleared') return <Badge tone="default">Cart emptied</Badge>;
+  if (status === 'converted') return <Badge tone="attention">Checkout started (legacy)</Badge>;
   if (status === 'abandoned') return <Badge tone="critical">Abandoned</Badge>;
   return <Badge tone="info">Active</Badge>;
 }
@@ -90,7 +93,10 @@ const EVENT_LABELS: Record<StorefrontEventRecord['eventType'], { label: string; 
   product_view: { label: 'Product view', tone: 'info' },
   add_to_cart: { label: 'Add to cart', tone: 'success' },
   cart_view: { label: 'Cart view', tone: 'default' },
-  checkout_initiated: { label: 'Checkout initiated', tone: 'attention' },
+  cart_updated: { label: 'Cart updated', tone: 'default' },
+  checkout_attempt: { label: 'Checkout attempt', tone: 'attention' },
+  checkout_error: { label: 'Checkout failed', tone: 'critical' },
+  checkout_initiated: { label: 'Checkout created', tone: 'attention' },
 };
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -122,11 +128,12 @@ function FunnelRow({ label, count, maxCount, rate }: { label: string; count: num
 function AttributionLine({
   record,
 }: {
-  record: Pick<AbandonedCheckoutRecord, 'utmSource' | 'utmMedium' | 'utmCampaign' | 'referrer' | 'deviceType' | 'sessionDurationSeconds'>;
+  record: Pick<AbandonedCheckoutRecord, 'utmSource' | 'utmMedium' | 'utmCampaign' | 'referrer' | 'deviceType' | 'sessionDurationSeconds'> & { utmContent?: string | null; utmTerm?: string | null };
 }) {
   const parts = [
     record.utmSource ? `${record.utmSource}${record.utmMedium ? `/${record.utmMedium}` : ''}` : null,
     record.utmCampaign,
+    record.utmContent ? `Creative: ${record.utmContent}` : null,
     record.deviceType,
     formatDuration(record.sessionDurationSeconds) ? `${formatDuration(record.sessionDurationSeconds)} on site` : null,
   ].filter(Boolean);
@@ -290,10 +297,12 @@ export default async function AbandonedCheckoutsPage({
           <StatCard label="Abandoned cart value" value={money.format(stats.abandonedCartValue)} sub="Never reached checkout" />
           <StatCard label="Checkouts abandoned" value={number.format(stats.checkoutsAbandoned)} sub={abandonmentRate === '—' ? undefined : `${abandonmentRate} abandonment rate`} />
           <StatCard label="Abandoned checkout value" value={money.format(stats.abandonedValue)} sub="Recoverable revenue" />
-          <StatCard label="Checkouts converted" value={number.format(stats.checkoutsConverted)} sub={conversionRate === '—' ? undefined : `${conversionRate} conversion rate`} />
-          <StatCard label="Converted value" value={money.format(stats.convertedValue)} />
+          <StatCard label="Checkout attempts" value={number.format(stats.checkoutAttempts)} />
+          <StatCard label="Checkout errors" value={number.format(stats.checkoutErrors)} />
+          <StatCard label="Checkouts paid" value={number.format(stats.checkoutsConverted)} sub={conversionRate === '—' ? undefined : `${conversionRate} conversion rate`} />
+          <StatCard label="Paid checkout quoted value" value={money.format(stats.convertedValue)} />
           <StatCard label="Active carts" value={number.format(stats.cartsActive)} sub="Still shopping" />
-          <StatCard label="Carts converted" value={number.format(stats.cartsConverted)} sub="Reached checkout" />
+          <StatCard label="Carts reaching checkout" value={number.format(stats.cartsConverted)} sub="Checkout link created; not proof of payment" />
         </div>
 
         {/* Funnel */}
@@ -388,7 +397,7 @@ export default async function AbandonedCheckoutsPage({
                         <td className="px-4 py-3 text-[13px] font-medium text-[#202223] text-right whitespace-nowrap">
                           {money.format(checkout.subtotal)}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{checkoutStatusBadge(checkout.status)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{checkoutStatusBadge(checkout.status, checkout.paymentVerifiedAt)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           {checkout.checkoutUrl && (
                             <a

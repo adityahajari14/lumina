@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/terms-of-service" },
   title: 'Terms & Conditions - Lumina Blackout Blinds',
   description:
     'Read the Terms & Conditions for using the Lumina Blackout Blinds website and purchasing our made-to-measure blackout blinds.',

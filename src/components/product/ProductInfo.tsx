@@ -8,10 +8,6 @@ import { useCheckout } from "@/hooks/useCheckout";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { getComparePriceData } from "@/lib/compare-price";
 import { fetchCustomizationPricing, fetchPriceMatrix, formatPriceWithCurrency, validateCartPrice } from "@/lib/api";
-import { cartItemToCheckoutRequest } from "@/lib/checkout";
-import { trackClarityInitiateCheckout } from "@/lib/clarity";
-import { trackInitiateCheckout } from "@/lib/meta-pixel";
-import { trackStoreCheckoutInitiated } from "@/lib/store-events";
 import { getReviewSummary } from "@/data/reviews";
 import {
   BLIND_COLOR_OPTIONS,
@@ -26,6 +22,7 @@ import type {
   ProductConfiguration,
   ProductReviewsData,
 } from "@/types";
+import { readStorage, writeStorage } from "@/lib/browser-storage";
 import { DEFAULT_CONFIGURATION } from "@/types";
 import ProductAccordion from "@/components/product/ProductAccordion";
 import LuminaFitPromiseModal from "@/components/product/LuminaFitPromiseModal";
@@ -95,8 +92,9 @@ type CustomizationField = "size" | "blindColor" | "frameColor" | "openingDirecti
 const FIELD_ORDER: CustomizationField[] = ["size", "blindColor", "frameColor", "openingDirection"];
 
 export default function ProductInfo({ product, initialReviewsData }: ProductInfoProps) {
-  const { addToCart } = useCart();
+  const { addToCart, isCartReady } = useCart();
   const { checkout, isCheckingOut: isBuyingNow, checkoutError: buyNowError } = useCheckout();
+  const actionBusy = useRef(false);
   const [isPreparingBuyNow, setIsPreparingBuyNow] = useState(false);
   const addToCartRef = useRef<HTMLButtonElement>(null);
   const sizeSectionRef = useRef<HTMLDivElement>(null);
@@ -106,6 +104,10 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<CustomizationField, string>>>({});
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [pricingLoaded, setPricingLoaded] = useState(false);
+  const [pricingError, setPricingError] = useState<string | null>(null);
+  const [pricingAttempt, setPricingAttempt] = useState(0);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isFitPromiseOpen, setIsFitPromiseOpen] = useState(false);
   const [isOpeningDirectionGuideOpen, setIsOpeningDirectionGuideOpen] = useState(false);
@@ -129,7 +131,28 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
   });
 
   useEffect(() => {
+    try {
+      const saved = JSON.parse(readStorage(`product-draft:${product.slug}`) || 'null');
+      if (saved && Number.isFinite(saved.savedAt) && saved.savedAt <= Date.now() && Date.now() - saved.savedAt < 7 * 24 * 60 * 60 * 1000 && saved.config &&
+          Number.isFinite(saved.config.width) && Number.isFinite(saved.config.height) &&
+          ['inches', 'cm'].includes(saved.config.widthUnit) && ['inches', 'cm'].includes(saved.config.heightUnit) &&
+          Object.entries(saved.config).every(([key, value]) => key in DEFAULT_CONFIGURATION && (value === null || typeof value === 'string' || typeof value === 'number'))) {
+        setConfig(previous => ({ ...previous, ...saved.config }));
+      }
+    } catch { /* ignore corrupt/expired drafts */ }
+    setDraftReady(true);
+  }, [product.slug]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const timer = setTimeout(() => writeStorage(`product-draft:${product.slug}`, JSON.stringify({ config, savedAt: Date.now() })), 250);
+    return () => clearTimeout(timer);
+  }, [config, draftReady, product.slug]);
+
+  useEffect(() => {
     let isMounted = true;
+    setPricingLoaded(false);
+    setPricingError(null);
 
     const loadPricing = async () => {
       try {
@@ -142,12 +165,10 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
 
         setPriceMatrix(matrix);
         setCustomizationPricing(customizations);
+        setPricingLoaded(true);
       } catch (error) {
         console.error("Failed to load pricing data:", error);
-      } finally {
-        if (isMounted) {
-          setPricingLoaded(true);
-        }
+        if (isMounted) setPricingError("Pricing could not be loaded. Please retry before ordering.");
       }
     };
 
@@ -156,7 +177,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     return () => {
       isMounted = false;
     };
-  }, [product.slug]);
+  }, [product.slug, pricingAttempt]);
 
   useEffect(() => {
     if (initialReviewsData) {
@@ -381,11 +402,11 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
   };
 
   const isActionInProgress = isAddingToCart || isPreparingBuyNow || isBuyingNow;
-  const isAddToCartDisabled = isActionInProgress || !pricingLoaded;
-  const isBuyNowDisabled = isActionInProgress || !pricingLoaded;
+  const isAddToCartDisabled = isActionInProgress || !pricingLoaded || !isCartReady;
+  const isBuyNowDisabled = isActionInProgress || !pricingLoaded || !isCartReady;
 
   const handleAddToCart = async () => {
-    if (isAddToCartDisabled) return;
+    if (isAddToCartDisabled || actionBusy.current) return;
 
     const errors = validateConfiguration();
     setFieldErrors(errors);
@@ -400,6 +421,8 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       return;
     }
 
+    actionBusy.current = true;
+    setActionError(null);
     setIsAddingToCart(true);
 
     try {
@@ -425,20 +448,15 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       );
     } catch (error) {
       console.error("Price validation failed:", error);
-      addToCart(
-        {
-          ...product,
-          price: totalPrice,
-        },
-        config
-      );
+      setActionError(error instanceof Error ? error.message : "We could not verify your price. Please try again.");
     } finally {
+      actionBusy.current = false;
       setIsAddingToCart(false);
     }
   };
 
   const handleBuyNow = async () => {
-    if (isBuyNowDisabled) return;
+    if (isBuyNowDisabled || actionBusy.current) return;
 
     const errors = validateConfiguration();
     setFieldErrors(errors);
@@ -453,6 +471,8 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       return;
     }
 
+    actionBusy.current = true;
+    setActionError(null);
     setIsPreparingBuyNow(true);
 
     let finalPrice = totalPrice;
@@ -473,7 +493,10 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       finalPrice = validation.valid ? totalPrice : validation.calculatedPrice;
     } catch (error) {
       console.error("Price validation failed:", error);
+      setActionError(error instanceof Error ? error.message : "We could not verify your price. Please try again.");
+      return;
     } finally {
+      actionBusy.current = false;
       setIsPreparingBuyNow(false);
     }
 
@@ -485,11 +508,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       addedAt: new Date(),
     };
 
-    trackClarityInitiateCheckout([adHocItem]);
-    trackInitiateCheckout([adHocItem], product.currency);
-    trackStoreCheckoutInitiated([adHocItem], finalPrice);
-
-    await checkout([cartItemToCheckoutRequest(adHocItem)]);
+    await checkout([adHocItem]);
   };
 
   const deliveryRange = useMemo(() => {
@@ -597,6 +616,14 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           </div>
         </div>
       </div>
+
+      {pricingError && (
+        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p>{pricingError}</p>
+          <button type="button" onClick={() => setPricingAttempt(attempt => attempt + 1)} className="mt-2 font-semibold underline">Retry pricing</button>
+        </div>
+      )}
+      {actionError && <p role="alert" className="text-sm text-red-700">{actionError}</p>}
 
       {/* Size */}
       <div

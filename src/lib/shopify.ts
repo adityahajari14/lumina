@@ -226,6 +226,7 @@ async function storefrontFetch<T>(
       'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN,
     },
     body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(12_000),
   };
 
   // Use Next.js ISR cache for server-side requests

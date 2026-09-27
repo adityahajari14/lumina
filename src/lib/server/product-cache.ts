@@ -46,6 +46,7 @@ async function fetchAllShopifyProducts(): Promise<Record<string, CachedProduct>>
   let cursor: string | null = null;
   let hasNextPage = true;
 
+  const deadline = AbortSignal.timeout(15_000);
   while (hasNextPage) {
     const response: Response = await fetch(getGraphQLUrl(), {
       method: 'POST',
@@ -58,6 +59,7 @@ async function fetchAllShopifyProducts(): Promise<Record<string, CachedProduct>>
         variables: { cursor },
       }),
       cache: 'no-store',
+      signal: deadline,
     });
 
     if (!response.ok) {

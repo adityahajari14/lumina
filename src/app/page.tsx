@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Hero from "../components/home/Hero";
 import ValueProps from "../components/home/ValueProps";
 import ComparisonTable from "../components/home/ComparisonTable";
@@ -9,6 +10,8 @@ import Faq from "../components/home/Faq";
 import SubscribeOffer from "../components/home/SubscribeOffer";
 import EmailCaptureModal from "../components/home/EmailCaptureModal";
 import QuickAnswersStrip from "../components/home/QuickAnswersStrip";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export const dynamic = "force-dynamic";
 

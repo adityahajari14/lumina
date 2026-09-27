@@ -12,7 +12,7 @@ function clampString(value: unknown, maxLength = MAX_TRACKING_FIELD_LENGTH): str
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { items, customerEmail, note } = body;
+    const { items, customerEmail, note } = body ?? {};
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -23,12 +23,14 @@ export async function POST(request: Request) {
 
     const result = await createCheckout({
       items,
-      customerEmail,
-      note,
+      customerEmail: clampString(customerEmail, 254),
+      note: clampString(note, 1000),
       sessionId: clampString(body.sessionId, 100),
       utmSource: clampString(body.utmSource, 200),
       utmMedium: clampString(body.utmMedium, 200),
       utmCampaign: clampString(body.utmCampaign, 200),
+      utmContent: clampString(body.utmContent, 200),
+      utmTerm: clampString(body.utmTerm, 200),
       referrer: clampString(body.referrer),
       deviceType: clampString(body.deviceType, 20),
       userAgent: clampString(body.userAgent),
@@ -40,9 +42,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: result }, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof SyntaxError) return NextResponse.json({ success: false, error: { message: 'Invalid request' } }, { status: 400 });
     if (error instanceof CheckoutError) {
       return NextResponse.json(
-        { success: false, error: { message: error.message } },
+        { success: false, error: { message: error.statusCode >= 500 ? 'Checkout is temporarily unavailable. Your cart is saved; please try again.' : error.message } },
         { status: error.statusCode }
       );
     }

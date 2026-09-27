@@ -22,11 +22,14 @@ export interface AbandonedCheckoutRecord {
   draftOrderId: string | null;
   checkoutUrl: string | null;
   shopifyOrderId: string | null;
+  paymentVerifiedAt: string | null;
   subtotal: number;
   items: AbandonedCheckoutItem[];
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
+  utmContent: string | null;
+  utmTerm: string | null;
   referrer: string | null;
   deviceType: string | null;
   userAgent: string | null;
@@ -48,11 +51,14 @@ interface AbandonedCheckoutRow {
   draft_order_id: string | null;
   checkout_url: string | null;
   shopify_order_id: string | null;
+  payment_verified_at: string | null;
   subtotal: string;
   items: AbandonedCheckoutItem[];
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
   referrer: string | null;
   device_type: string | null;
   user_agent: string | null;
@@ -71,11 +77,14 @@ function toRecord(row: AbandonedCheckoutRow): AbandonedCheckoutRecord {
     draftOrderId: row.draft_order_id,
     checkoutUrl: row.checkout_url,
     shopifyOrderId: row.shopify_order_id,
+    paymentVerifiedAt: row.payment_verified_at,
     subtotal: Number(row.subtotal),
     items: row.items,
     utmSource: row.utm_source,
     utmMedium: row.utm_medium,
     utmCampaign: row.utm_campaign,
+    utmContent: row.utm_content,
+    utmTerm: row.utm_term,
     referrer: row.referrer,
     deviceType: row.device_type,
     userAgent: row.user_agent,
@@ -84,6 +93,7 @@ function toRecord(row: AbandonedCheckoutRow): AbandonedCheckoutRecord {
 }
 
 export async function recordCheckoutStarted(params: {
+  checkoutKey?: string;
   customerEmail?: string | null;
   customerName?: string | null;
   customerPhone?: string | null;
@@ -95,6 +105,8 @@ export async function recordCheckoutStarted(params: {
   utmSource?: string | null;
   utmMedium?: string | null;
   utmCampaign?: string | null;
+  utmContent?: string | null;
+  utmTerm?: string | null;
   referrer?: string | null;
   deviceType?: string | null;
   userAgent?: string | null;
@@ -107,8 +119,8 @@ export async function recordCheckoutStarted(params: {
     `INSERT INTO abandoned_checkouts
       (customer_email, customer_name, customer_phone, session_id, status, draft_order_id, checkout_url,
        subtotal, items, utm_source, utm_medium, utm_campaign, referrer, device_type, user_agent,
-       session_duration_seconds)
-     VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+       session_duration_seconds, checkout_key, utm_content, utm_term)
+     VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
     [
       params.customerEmail || null,
       params.customerName || null,
@@ -125,8 +137,16 @@ export async function recordCheckoutStarted(params: {
       params.deviceType || null,
       params.userAgent || null,
       params.sessionDurationSeconds ?? null,
+      params.checkoutKey || null,
+      params.utmContent || null,
+      params.utmTerm || null,
     ]
   );
+  // Handles a paid webhook arriving before the checkout snapshot finishes writing.
+  await db.query(`UPDATE abandoned_checkouts AS checkout
+    SET status = 'converted', shopify_order_id = paid.order_id, payment_verified_at = paid.received_at, updated_at = now()
+    FROM shopify_paid_orders AS paid
+    WHERE checkout.checkout_key = $1 AND paid.checkout_key = checkout.checkout_key`, [params.checkoutKey || null]);
 }
 
 export interface CheckoutFilters {
@@ -204,9 +224,7 @@ export async function listAbandonedCheckouts(
   return { checkouts: rows.map(toRecord), total: countRows[0]?.total ?? 0 };
 }
 
-// Polls Shopify for each still-pending checkout's draft order status: moves it
-// to 'converted' if the draft order became a real order, or 'abandoned' once
-// it's been sitting untouched past ABANDONED_AFTER_MINUTES.
+// Revisit pending and abandoned checkouts; an order existing is not proof of payment.
 export async function reconcilePendingCheckouts(): Promise<{
   checked: number;
   converted: number;
@@ -216,22 +234,29 @@ export async function reconcilePendingCheckouts(): Promise<{
   const db = sql();
 
   const pending = (await db.query(
-    `SELECT * FROM abandoned_checkouts WHERE status = 'pending'`
+    `SELECT * FROM abandoned_checkouts WHERE (status IN ('pending', 'abandoned') OR (status = 'converted' AND payment_verified_at IS NULL))
+       AND draft_order_id IS NOT NULL
+       ORDER BY last_checked_at ASC NULLS FIRST LIMIT 100`
   )) as AbandonedCheckoutRow[];
 
+  const deadline = Date.now() + 30_000;
+  let checked = 0;
   let converted = 0;
   let abandoned = 0;
 
   for (const row of pending) {
+    if (Date.now() >= deadline) break;
+    checked++;
     if (!row.draft_order_id) continue;
 
     try {
+      await db.query(`UPDATE abandoned_checkouts SET last_checked_at = now() WHERE id = $1`, [row.id]);
       const status = await getDraftOrderStatus(row.draft_order_id);
 
-      if (status.orderId) {
+      if (status.purchased && status.orderId) {
         await db.query(
           `UPDATE abandoned_checkouts
-             SET status = 'converted', shopify_order_id = $2, updated_at = now()
+             SET status = 'converted', shopify_order_id = $2, payment_verified_at = COALESCE(payment_verified_at, now()), updated_at = now()
            WHERE id = $1`,
           [row.id, status.orderId]
         );
@@ -239,18 +264,19 @@ export async function reconcilePendingCheckouts(): Promise<{
         continue;
       }
     } catch (error) {
-      console.error(`[AbandonedCheckout] Failed to fetch draft order ${row.draft_order_id}:`, error);
+      console.error('[AbandonedCheckout] Payment status check failed:', error instanceof Error ? error.message : 'unknown');
+      continue;
     }
 
     const ageMinutes = (Date.now() - new Date(row.created_at).getTime()) / 60_000;
-    if (ageMinutes >= ABANDONED_AFTER_MINUTES) {
+    if (row.status !== 'abandoned' && ageMinutes >= ABANDONED_AFTER_MINUTES) {
       await db.query(
-        `UPDATE abandoned_checkouts SET status = 'abandoned', updated_at = now() WHERE id = $1`,
+        `UPDATE abandoned_checkouts SET status = 'abandoned', updated_at = now() WHERE id = $1 AND payment_verified_at IS NULL`,
         [row.id]
       );
       abandoned += 1;
     }
   }
 
-  return { checked: pending.length, converted, abandoned };
+  return { checked, converted, abandoned };
 }

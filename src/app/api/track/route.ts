@@ -4,11 +4,11 @@ import {
   STOREFRONT_EVENT_TYPES,
   type StorefrontEventType,
 } from '@/lib/server/events.service';
-import { markAbandonedCartCheckoutStarted, upsertAbandonedCart } from '@/lib/server/abandoned-cart.service';
+import { upsertAbandonedCart } from '@/lib/server/abandoned-cart.service';
 
 const MAX_TEXT_LENGTH = 200;
 const MAX_USER_AGENT_LENGTH = 500;
-const MAX_JSON_BYTES = 4_000;
+const MAX_JSON_BYTES = 60_000;
 const DEVICE_TYPES = new Set(['desktop', 'mobile', 'tablet']);
 
 function clampText(value: unknown, maxLength = MAX_TEXT_LENGTH): string | null {
@@ -66,13 +66,14 @@ export async function POST(request: Request) {
 
     await recordStorefrontEvent(eventInput);
 
-    if (eventType === 'add_to_cart' || eventType === 'cart_view') {
+    if (eventType === 'add_to_cart' || eventType === 'cart_view' || eventType === 'cart_updated') {
       const meta = eventInput.meta as { items?: unknown } | null;
       const items = Array.isArray(meta?.items) ? meta!.items : null;
-      if (items) {
+      if (items && items.length <= 100 && items.every(item => item && typeof item === 'object' && typeof item.handle === 'string' && Number.isFinite(item.price) && item.price > 0 && Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity <= 100)) {
         await upsertAbandonedCart({
           sessionId,
-          subtotal: eventInput.value ?? 0,
+          subtotal: items.reduce((sum: number, item: { price?: number; quantity?: number }) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0), 0),
+          snapshotAt: Math.floor(Math.min(Date.now(), clampNumber(eventInput.meta?.snapshotAt) ?? Date.now())),
           items,
           utmSource: eventInput.utmSource,
           utmMedium: eventInput.utmMedium,
@@ -85,12 +86,10 @@ export async function POST(request: Request) {
       }
     }
 
-    if (eventType === 'checkout_initiated') {
-      await markAbandonedCartCheckoutStarted(sessionId);
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof SyntaxError) return NextResponse.json({ success: false }, { status: 400 });
     console.error('[Track]', error instanceof Error ? error.message : error);
     return NextResponse.json({ success: false }, { status: 500 });
   }

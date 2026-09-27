@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
 import type { Product } from "@/types";
 
 interface ProductGalleryProps {
@@ -14,17 +15,8 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const images = product.images;
 
-  // Prevent body scrolling when modal is open
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isModalOpen]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(isModalOpen, dialogRef, () => setIsModalOpen(false));
 
   if (images.length === 0) {
     return (
@@ -44,7 +36,6 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
       {/* Main Image */}
       <div 
         className="bg-[#eaedf0] rounded-2xl w-full aspect-4/5 relative overflow-hidden flex items-center justify-center cursor-pointer"
-        onClick={() => setIsModalOpen(true)}
       >
         <Image
           src={images[activeIdx] || images[0]}
@@ -56,8 +47,11 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
           sizes="(max-width: 1024px) 100vw, 50vw"
         />
 
+        <button type="button" className="absolute inset-0" aria-label="Enlarge product image" onClick={() => setIsModalOpen(true)} />
+
         {/* Navigation Arrows (Stop propagation so they don't trigger modal) */}
         <button
+          aria-label="Previous image"
           onClick={(e) => {
             e.stopPropagation();
             setActiveIdx(activeIdx > 0 ? activeIdx - 1 : images.length - 1);
@@ -70,6 +64,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         </button>
 
         <button
+          aria-label="Next image"
           onClick={(e) => {
             e.stopPropagation();
             setActiveIdx(activeIdx < images.length - 1 ? activeIdx + 1 : 0);
@@ -99,6 +94,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
             return (
               <button
                 key={idx}
+              aria-label={`View image ${idx + 1}`}
                 onClick={() => {
                   setActiveIdx(idx);
                   setIsModalOpen(true);
@@ -122,6 +118,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
           return (
             <button
               key={idx}
+              aria-label={`View image ${idx + 1}`}
               onClick={() => setActiveIdx(idx)}
               className={`relative rounded-xl overflow-hidden aspect-square ${activeIdx === idx ? 'ring-2 ring-offset-2 ring-[#131720]' : 'ring-1 ring-[#eaedf0] opacity-80 hover:opacity-100'} transition-all`}
             >
@@ -144,7 +141,8 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
           onClick={() => setIsModalOpen(false)}
         >
           {/* Centered Modal Container */}
-          <div 
+          <div
+            ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Product images"
             className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
@@ -170,6 +168,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 {images.map((src, idx) => (
                   <button
                     key={idx}
+              aria-label={`View image ${idx + 1}`}
                     onClick={() => setActiveIdx(idx)}
                     className={`relative h-20 w-20 md:w-full shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${activeIdx === idx ? 'border-[#131720]' : 'border-transparent hover:border-[#eaedf0]'}`}
                   >
@@ -187,7 +186,8 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
               {/* Main Image Area */}
               <div className="flex flex-1 relative bg-[#f8f9fb] items-center justify-center p-4">
                 <button
-                  onClick={() => setActiveIdx(activeIdx > 0 ? activeIdx - 1 : images.length - 1)}
+                  aria-label="Previous image"
+                   onClick={() => setActiveIdx(activeIdx > 0 ? activeIdx - 1 : images.length - 1)}
                   className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-3 rounded-full text-[#131720] shadow-sm transition-colors z-20"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -208,6 +208,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 </div>
 
                 <button
+                   aria-label="Next image"
                    onClick={() => setActiveIdx(activeIdx < images.length - 1 ? activeIdx + 1 : 0)}
                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-3 rounded-full text-[#131720] shadow-sm transition-colors z-20"
                 >

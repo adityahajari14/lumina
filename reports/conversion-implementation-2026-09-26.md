@@ -1,0 +1,32 @@
+**Conversion improvements ? implementation and validation, 26 September 2026**
+
+Implemented items 2, 3, 4, 5, 8, 9, and 10 from the implementation list. This numbering refers to that list, not the numbered findings in the original audit. Items 1, 6, and 7 were excluded. Policy text, measurement/unit-switch behavior, promotional offers, delivery calculations, review claims, the email popup, and the mobile buying layout were not changed. Policy pages received canonical metadata only.
+
+| Item | Change |
+|---|---|
+| 2 ? Attribution | Capture homepage landing UTMs before navigation; keep campaign and creative attribution in the current tab; expire sessions after 30 minutes of inactivity. Capture utm_content and utm_term in events and checkout records. Creative attribution appears in checkout reporting/export. Storage failures do not block shopping. |
+| 3 ? Reporting | Record complete drawer/cart snapshots, updates and emptied carts. Calculate cart value from all items. Distinguish checkout attempts, creation failures, successful checkout links, and verified paid checkouts. Meta/Clarity checkout events fire after successful creation. Browser analytics cannot mark purchases paid. |
+| 4 ? Order status | Normalize GraphQL draft IDs before REST status reads; verify the order's financial status. Revisit abandoned checkouts for late payments. Signed paid webhooks persist an idempotent order record and update matching checkouts. Legacy conversion rows remain unverified until checked. Purchased cart lines are removed without deleting new or edited items. |
+| 5 ? Reliability | Price-load errors provide retry; failed validation cannot add a fallback-priced item or proceed to Buy Now. Validate checkout quantity, sizes and required options on the server. Add request deadlines and duplicate-click guards. Failed Shopify variant lookups no longer poison the cache or silently create custom lines. A missing product shows an unavailable state instead of a zero-priced fallback. |
+| 8 ? Returning shoppers | Restore saved carts after hydration; recalculate totals and reject malformed saved entries. Save unfinished configurations for seven days. Show full cart configurations, including fractions, units, fabric and frame labels. |
+| 9 ? Performance/accessibility | Enable responsive Next.js image optimization. Cache Judge.me review retrieval for five minutes with request/pagination bounds. Add FAQ keyboard controls, gallery button names, modal focus handling, Escape behavior and inaccessible hidden-cart controls. |
+| 10 ? Search metadata | Add sitemap.xml, robots.txt, page canonicals and escaped Product/AggregateOffer JSON-LD. Private account/admin/cart routes receive noindex metadata. Unknown product routes return 404. |
+
+**Validation**
+
+- `npm run build`: production compilation, TypeScript validation and all 112 pricing cells passed.
+- `npm test`: 15 regression tests passed, using mocked Shopify/database writes. Tests cover attribution persistence/expiry, malformed carts, selective clearing, draft ID normalization, payment states, checkout validation, upstream failures, deadlines, webhook signatures, late reconciliation and cart/event reporting.
+- `npm run lint`: no errors; five pre-existing raw-image warnings in ProductReviews remain.
+- Isolated Chrome against the production build at a 390-pixel viewport: verified landing attribution, saved selections, duplicate-add prevention, drawer snapshots/focus, nested editor Escape, gallery focus restoration and saved-cart reload without React exceptions.
+- Mocked pricing failure disabled purchasing; retry restored it. Mocked validation failure left the cart untouched. Mocked checkout failure recorded attempt/error without InitiateCheckout. Mocked success recorded creation and a pending snapshot; a mocked paid return removed only the purchased line.
+- Local robots/sitemap returned 200, unknown product returned 404, canonical/JSON-LD were present, and product images loaded through the optimizer.
+- Read-only Shopify scope inspection confirmed the configured token can read orders and draft orders. No order, payment, subscription, marketing event write or production database migration was intentionally made by these tests. Test browser analytics and checkout writes were intercepted. Catalog/review reads used the configured services.
+
+**Deployment requirements ? not completed by code changes**
+
+1. Set `SHOPIFY_WEBHOOK_SECRET` to the signing secret for the Shopify webhook source, and register `orders/paid` at `https://www.luminablackoutblinds.com/api/webhooks/shopify/orders-paid`. The configured Shopify app returned **zero paid webhook subscriptions** during read-only inspection. Other apps' subscriptions are outside that inspection. Unsigned requests return 401; missing configuration or persistence failure returns 503 so delivery is not falsely acknowledged.
+2. Set `CRON_SECRET` for the Vercel scheduled reconciliation endpoint. Local webhook and cron secrets are absent; production environment variables were not inspected. The existing daily schedule is unchanged. Each reconciliation run is bounded and rotates through pending, abandoned and unverified legacy checkouts; instant paid updates depend on webhook delivery.
+3. Deploy with the existing database role able to run the additive `ensureSchema` migrations. New fields/tables retain checkout correlation, payment verification, creative attribution and snapshot ordering. Database mutations were mocked during validation, so application against the production database remains a deployment check. Failed schema initialization can retry.
+4. After deployment, verify one authorized paid order through Shopify and the signed webhook, then confirm cart clearing and the admin paid state. Meta Purchase/CAPI ownership and receipt still require Events Manager/Shopify-channel verification; this implementation does not add another Purchase sender.
+
+The dashboard's paid value is explicitly a **quoted checkout subtotal**, not net sales after discounts, tax or refunds. Refund/cancellation accounting remains outside these changes. Legacy pending browser checkouts without item snapshots preserve the cart rather than guessing which items to delete. Checkout mutations are not automatically retried; duplicate-click guards do not provide durable, exactly-once creation across network timeouts. Sales lift and real-device/Core Web Vitals improvements have not been measured. Changes are local and have not been deployed.

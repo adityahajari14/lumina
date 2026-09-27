@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { reconcilePendingCheckouts } from '@/lib/server/abandoned-checkout.service';
 import { reconcilePendingCarts } from '@/lib/server/abandoned-cart.service';
 
+export const maxDuration = 60;
+
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET || process.env.INTERNAL_API_SECRET;
   if (!secret) return false;

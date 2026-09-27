@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchCustomizationPricing,
   fetchPriceMatrix,
@@ -8,7 +8,7 @@ import {
   validateCartPrice,
 } from "@/lib/api";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
-import { lockBodyScroll, unlockBodyScroll } from "@/lib/scroll-lock";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
 import {
   BLIND_COLOR_OPTIONS,
   FRAME_COLOR_OPTIONS,
@@ -30,6 +30,7 @@ interface CartCustomizationModalProps {
 export default function CartCustomizationModal({ item, onClose, onSave }: CartCustomizationModalProps) {
   const [draftConfig, setDraftConfig] = useState<ProductConfiguration | null>(null);
   const [pricingLoaded, setPricingLoaded] = useState(false);
+  const [pricingAttempt, setPricingAttempt] = useState(0);
   const [priceMatrix, setPriceMatrix] = useState<PriceBandMatrix | null>(null);
   const [customizationPricing, setCustomizationPricing] = useState<CustomizationPricing[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -57,6 +58,7 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
         ]);
 
         if (!isMounted) return;
+        setSaveError(null);
         setPriceMatrix(matrix);
         setCustomizationPricing(customizations);
       } catch (error) {
@@ -76,23 +78,10 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
     return () => {
       isMounted = false;
     };
-  }, [item]);
+  }, [item, pricingAttempt]);
 
-  useEffect(() => {
-    if (!item) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    lockBodyScroll();
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      unlockBodyScroll();
-    };
-  }, [item, onClose]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(Boolean(item && draftConfig), dialogRef, onClose);
 
   const unit = draftConfig?.widthUnit === "cm" ? "cm" : "in";
 
@@ -252,6 +241,8 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
         aria-label="Close customisation editor"
       />
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="cart-customisation-title"
@@ -278,6 +269,7 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
         </div>
 
         <div className="px-5 py-6 md:px-7 flex flex-col gap-7">
+          {pricingLoaded && !priceMatrix && <button type="button" className="text-sm underline" onClick={() => setPricingAttempt(attempt => attempt + 1)}>Retry pricing</button>}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
               <span className="font-sans font-semibold text-[14px] text-[#131720]">

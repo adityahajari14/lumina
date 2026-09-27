@@ -83,7 +83,7 @@ export async function GET(request: Request) {
   const { checkouts } = await listAbandonedCheckouts(filters, EXPORT_ROW_LIMIT, 0);
 
   const csv = toCsv(
-    ['Created At', 'Status', 'Email', 'Items', 'Subtotal', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Device', 'Session Duration (s)', 'Invoice URL'],
+    ['Created At', 'Status', 'Email', 'Items', 'Subtotal', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'UTM Content', 'UTM Term', 'Device', 'Session Duration (s)', 'Invoice URL'],
     checkouts.map((checkout) => [
       checkout.createdAt,
       checkout.status,
@@ -93,6 +93,8 @@ export async function GET(request: Request) {
       checkout.utmSource ?? '',
       checkout.utmMedium ?? '',
       checkout.utmCampaign ?? '',
+      checkout.utmContent ?? '',
+      checkout.utmTerm ?? '',
       checkout.deviceType ?? '',
       checkout.sessionDurationSeconds ?? '',
       checkout.checkoutUrl ?? '',

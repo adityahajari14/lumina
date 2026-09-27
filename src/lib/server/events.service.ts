@@ -4,6 +4,9 @@ export const STOREFRONT_EVENT_TYPES = [
   'product_view',
   'add_to_cart',
   'cart_view',
+  'cart_updated',
+  'checkout_attempt',
+  'checkout_error',
   'checkout_initiated',
 ] as const;
 
@@ -52,6 +55,8 @@ export interface DashboardStats {
   addToCarts: number;
   cartViews: number;
   checkoutsInitiated: number;
+  checkoutAttempts: number;
+  checkoutErrors: number;
   uniqueSessions: number;
   checkoutsPending: number;
   checkoutsAbandoned: number;
@@ -209,12 +214,12 @@ export async function getDashboardStats(days: number): Promise<DashboardStats> {
       [days]
     ),
     db.query(
-      `SELECT status,
+      `SELECT CASE WHEN status = 'converted' AND payment_verified_at IS NULL THEN 'unverified' ELSE status END AS status,
               COUNT(*)::int AS count,
               COALESCE(SUM(subtotal), 0) AS total
          FROM abandoned_checkouts
         WHERE created_at >= now() - ($1 || ' days')::interval
-        GROUP BY status`,
+        GROUP BY 1`,
       [days]
     ),
     db.query(
@@ -243,7 +248,9 @@ export async function getDashboardStats(days: number): Promise<DashboardStats> {
     productViews: countFor('product_view'),
     addToCarts: countFor('add_to_cart'),
     cartViews: countFor('cart_view'),
-    checkoutsInitiated: countFor('checkout_initiated'),
+    checkoutAttempts: countFor('checkout_attempt'),
+    checkoutErrors: countFor('checkout_error'),
+    checkoutsInitiated: checkoutStats.reduce((sum, row) => sum + row.count, 0),
     uniqueSessions: sessionCount[0]?.count ?? 0,
     checkoutsPending: checkoutFor('pending').count,
     checkoutsAbandoned: checkoutFor('abandoned').count,
@@ -252,7 +259,7 @@ export async function getDashboardStats(days: number): Promise<DashboardStats> {
     convertedValue: Number(checkoutFor('converted').total),
     cartsActive: cartFor('active').count,
     cartsAbandoned: cartFor('abandoned').count,
-    cartsConverted: cartFor('converted').count,
+    cartsConverted: cartFor('converted').count + cartFor('checkout_started').count,
     abandonedCartValue: Number(cartFor('abandoned').total),
   };
 }

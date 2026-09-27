@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacy-policy" },
   title: 'Privacy Policy - Lumina Blackout Blinds',
   description:
     'Read the Privacy Policy for Lumina Blackout Blinds, describing how we collect, use, and disclose your personal information.',

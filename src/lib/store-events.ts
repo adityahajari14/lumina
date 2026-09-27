@@ -1,10 +1,8 @@
 import type { CartItem, Product, ProductConfiguration } from "@/types";
 
-const SESSION_STORAGE_KEY = "store_session_id";
-const SESSION_START_STORAGE_KEY = "store_session_started_at";
-const SESSION_ATTRIBUTION_STORAGE_KEY = "store_session_attribution";
+import { initializeStoreSession } from "./store-session";
 
-type StoreEventType = "product_view" | "add_to_cart" | "cart_view" | "checkout_initiated";
+type StoreEventType = "product_view" | "add_to_cart" | "cart_view" | "cart_updated" | "checkout_attempt" | "checkout_initiated" | "checkout_error";
 
 interface StoreEventPayload {
   productHandle?: string;
@@ -13,55 +11,6 @@ interface StoreEventPayload {
   value?: number;
   configuration?: Record<string, unknown>;
   meta?: Record<string, unknown>;
-}
-
-interface SessionAttribution {
-  utmSource: string | null;
-  utmMedium: string | null;
-  utmCampaign: string | null;
-  referrer: string | null;
-}
-
-function getSessionId(): string {
-  const existing = localStorage.getItem(SESSION_STORAGE_KEY);
-  if (existing) return existing;
-
-  const sessionId = crypto.randomUUID();
-  localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
-  return sessionId;
-}
-
-function getSessionStartedAt(): number {
-  const existing = localStorage.getItem(SESSION_START_STORAGE_KEY);
-  if (existing) return Number(existing);
-
-  const startedAt = Date.now();
-  localStorage.setItem(SESSION_START_STORAGE_KEY, String(startedAt));
-  return startedAt;
-}
-
-// Captured once per session (first touch), so later events keep attributing to
-// the campaign/referrer that actually brought the visitor in.
-function getSessionAttribution(): SessionAttribution {
-  const existing = localStorage.getItem(SESSION_ATTRIBUTION_STORAGE_KEY);
-  if (existing) {
-    try {
-      return JSON.parse(existing);
-    } catch {
-      // fall through and re-derive
-    }
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const attribution: SessionAttribution = {
-    utmSource: params.get("utm_source"),
-    utmMedium: params.get("utm_medium"),
-    utmCampaign: params.get("utm_campaign"),
-    referrer: document.referrer || null,
-  };
-
-  localStorage.setItem(SESSION_ATTRIBUTION_STORAGE_KEY, JSON.stringify(attribution));
-  return attribution;
 }
 
 function getDeviceType(): string {
@@ -75,20 +24,13 @@ function sendStoreEvent(eventType: StoreEventType, payload: StoreEventPayload) {
   if (typeof window === "undefined") return;
 
   try {
-    const attribution = getSessionAttribution();
-    const sessionDurationSeconds = Math.round((Date.now() - getSessionStartedAt()) / 1000);
-
+    const context = getStoreSessionContext();
+    if (!context) return;
     const body = JSON.stringify({
       eventType,
-      sessionId: getSessionId(),
-      utmSource: attribution.utmSource,
-      utmMedium: attribution.utmMedium,
-      utmCampaign: attribution.utmCampaign,
-      referrer: attribution.referrer,
-      deviceType: getDeviceType(),
-      userAgent: navigator.userAgent,
-      sessionDurationSeconds,
+      ...context,
       ...payload,
+      meta: { snapshotAt: Date.now(), ...payload.meta, utmContent: context.utmContent, utmTerm: context.utmTerm },
     });
     // keepalive lets the request survive navigation (e.g. redirect to checkout)
     fetch("/api/track", {
@@ -115,14 +57,35 @@ export function trackStoreProductView(product: Product) {
   });
 }
 
-export function trackStoreAddToCart(product: Product, configuration: ProductConfiguration) {
+export function trackStoreAddToCart(product: Product, configuration: ProductConfiguration, items: CartItem[]) {
   sendStoreEvent("add_to_cart", {
     productHandle: product.slug,
     productTitle: product.name,
     quantity: 1,
     value: product.price,
     configuration: configurationSummary(configuration),
+    meta: { items: cartSnapshot(items), cartTotal: items.reduce((sum, item) => sum + item.product.price * item.quantity, 0) },
   });
+}
+
+function cartSnapshot(items: CartItem[]) {
+  return items.map(item => ({
+    handle: item.product.slug, title: item.product.name, quantity: item.quantity,
+    price: item.product.price, configuration: configurationSummary(item.configuration),
+  }));
+}
+
+export function trackStoreCartUpdated(items: CartItem[], total: number) {
+  sendStoreEvent("cart_updated", { value: total, meta: { items: cartSnapshot(items), snapshotAt: Date.now() } });
+}
+
+export function trackStoreCheckoutAttempt(items: CartItem[], total: number) {
+  sendStoreEvent("checkout_attempt", { value: total, meta: { items: cartSnapshot(items) } });
+}
+
+export function trackStoreCheckoutError() {
+  // Keep raw server errors and customer data out of analytics.
+  sendStoreEvent("checkout_error", { meta: { reason: "checkout_creation_failed" } });
 }
 
 export function trackStoreCartView(items: CartItem[], total: number) {
@@ -163,6 +126,8 @@ export interface StoreSessionContext {
   utmMedium: string | null;
   utmCampaign: string | null;
   referrer: string | null;
+  utmContent: string | null;
+  utmTerm: string | null;
   deviceType: string;
   userAgent: string;
   sessionDurationSeconds: number;
@@ -174,15 +139,13 @@ export interface StoreSessionContext {
 export function getStoreSessionContext(): StoreSessionContext | null {
   if (typeof window === "undefined") return null;
 
-  const attribution = getSessionAttribution();
+  const session = initializeStoreSession();
+  if (!session) return null;
   return {
-    sessionId: getSessionId(),
-    utmSource: attribution.utmSource,
-    utmMedium: attribution.utmMedium,
-    utmCampaign: attribution.utmCampaign,
-    referrer: attribution.referrer,
+    sessionId: session.id,
+    ...session.attribution,
     deviceType: getDeviceType(),
     userAgent: navigator.userAgent,
-    sessionDurationSeconds: Math.round((Date.now() - getSessionStartedAt()) / 1000),
+    sessionDurationSeconds: Math.round((Date.now() - session.startedAt) / 1000),
   };
 }

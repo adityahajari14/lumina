@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Product, ProductAccordionItem, ProductFeatures } from '@/types';
 import { fetchShopifyProductByHandleMerged } from '@/lib/shopify';
 import { BLACKOUT_PRODUCT_HANDLE, MEASURING_GUIDE_PATH, FITTING_GUIDE_PATH } from '@/lib/product-routes';
@@ -149,12 +150,12 @@ function buildFallbackProduct(): Product {
   };
 }
 
-export async function getBlackoutProduct(): Promise<Product> {
+export const getBlackoutProduct = cache(async (): Promise<Product> => {
   const fallback = buildFallbackProduct();
 
   try {
     const apiProduct = await fetchShopifyProductByHandleMerged(BLACKOUT_PRODUCT_HANDLE);
-    if (!apiProduct) return fallback;
+    if (!apiProduct || !Number.isFinite(Number(apiProduct.price)) || Number(apiProduct.price) <= 0) throw new Error("Product temporarily unavailable");
 
     return {
       id: apiProduct.id,
@@ -185,6 +186,6 @@ export async function getBlackoutProduct(): Promise<Product> {
       relatedProducts: [],
     };
   } catch {
-    return fallback;
+    throw new Error("Product information is temporarily unavailable. Please try again.");
   }
-}
+});

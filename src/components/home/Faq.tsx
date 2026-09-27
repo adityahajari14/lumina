@@ -83,13 +83,16 @@ export default function Faq() {
                 key={i}
                 className="border-b border-[#dbe0e6] flex flex-col w-full"
               >
-                <div
-                  className="flex items-center justify-between py-6 w-full cursor-pointer group hover:opacity-80 transition-opacity"
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${i}`}
+                  className="text-left flex items-center justify-between py-6 w-full cursor-pointer group hover:opacity-80 transition-opacity"
                   onClick={() => toggleFaq(i)}
                 >
-                  <h3 className="font-[family-name:var(--font-dm-sans)] font-medium text-[#131720] text-base leading-6 pr-4">
+                  <span className="font-[family-name:var(--font-dm-sans)] font-medium text-[#131720] text-base leading-6 pr-4">
                     {faq.question}
-                  </h3>
+                  </span>
                     <div className="bg-[#eaedf0] flex items-center justify-center rounded-full size-7 shrink-0 relative">
                       <span className="absolute flex items-center justify-center w-full h-full text-[#131720]">
                         {isOpen ? (
@@ -103,9 +106,9 @@ export default function Faq() {
                         )}
                       </span>
                     </div>
-                </div>
+                </button>
                 {isOpen && (
-                  <div className="pb-6 pr-12 w-full animate-in fade-in duration-300">
+                  <div id={`faq-answer-${i}`} className="pb-6 pr-12 w-full animate-in fade-in duration-300">
                     <p className="font-[family-name:var(--font-dm-sans)] font-normal text-[#657186] text-sm leading-[24px]">
                       {faq.answer}
                     </p>

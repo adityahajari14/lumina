@@ -119,7 +119,17 @@ export function ensureSchema(): Promise<void> {
           locked_until TIMESTAMPTZ
         )`
       );
-    })();
+      await db.query(`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS payment_verified_at TIMESTAMPTZ`);
+      await db.query(`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS checkout_key TEXT`);
+      await db.query(`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS utm_content TEXT`);
+      await db.query(`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS utm_term TEXT`);
+      await db.query(`CREATE TABLE IF NOT EXISTS shopify_paid_orders (
+        order_id TEXT PRIMARY KEY, checkout_key TEXT, received_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`);
+      await db.query(`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS last_checked_at TIMESTAMPTZ`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_checkout_key ON abandoned_checkouts (checkout_key)`);
+      await db.query(`ALTER TABLE abandoned_carts ADD COLUMN IF NOT EXISTS snapshot_at BIGINT NOT NULL DEFAULT 0`);
+    })().catch(error => { migrationPromise = null; throw error; });
   }
   return migrationPromise;
 }

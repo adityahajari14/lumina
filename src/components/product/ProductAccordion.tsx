@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { ProductAccordionItem } from "@/types";
 
 interface ProductAccordionProps {
@@ -8,6 +8,7 @@ interface ProductAccordionProps {
 }
 
 export default function ProductAccordion({ items }: ProductAccordionProps) {
+  const id = useId();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
@@ -19,6 +20,9 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
       {items.map((item, i) => (
         <div key={`${item.title}-${i}`} className="border-b border-[#dbe0e6]">
           <button
+            type="button"
+            aria-expanded={openIndex === i}
+            aria-controls={`${id}-${i}`}
             onClick={() => toggle(i)}
             className="w-full flex items-center justify-between py-5 text-left transition-colors hover:text-[#4051b5]"
           >
@@ -40,6 +44,8 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
             </svg>
           </button>
           <div
+            id={`${id}-${i}`}
+            hidden={openIndex !== i}
             className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-160 pb-5 opacity-100' : 'max-h-0 opacity-0'}`}
           >
             {item.contentHtml ? (

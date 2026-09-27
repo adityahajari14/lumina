@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/seo";
 import type { Metadata } from "next";
 import { Lora, Manrope } from "next/font/google";
 import Script from "next/script";
@@ -7,6 +8,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import TopBar from "../components/layout/TopBar";
 import MetaPixelPageView from "@/components/analytics/MetaPixelPageView";
+import StoreSession from "@/components/analytics/StoreSession";
 import ShopifyAnalytics from "@/components/analytics/ShopifyAnalytics";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -25,6 +27,7 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Lumina - Blackout Blinds",
   description: "Experience total darkness with our premium blackout blinds.",
   icons: {
@@ -84,6 +87,7 @@ export default function RootLayout({
           <MetaPixelPageView />
         </Suspense>
         <Suspense fallback={null}>
+          <StoreSession />
           <ShopifyAnalytics />
         </Suspense>
         <AuthProvider>

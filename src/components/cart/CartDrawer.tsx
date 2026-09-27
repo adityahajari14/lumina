@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -8,11 +8,8 @@ import { useCheckout } from "@/hooks/useCheckout";
 import { getComparePriceData } from "@/lib/compare-price";
 import { formatPriceWithCurrency } from "@/lib/api";
 import { formatCartConfiguration } from "@/lib/cart-format";
-import { cartItemToCheckoutRequest } from "@/lib/checkout";
-import { lockBodyScroll, unlockBodyScroll } from "@/lib/scroll-lock";
-import { trackClarityInitiateCheckout } from "@/lib/clarity";
-import { trackInitiateCheckout } from "@/lib/meta-pixel";
-import { trackStoreCheckoutInitiated } from "@/lib/store-events";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
+import { trackStoreCartView } from "@/lib/store-events";
 import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
 import LuminaFitPromiseModal from "@/components/product/LuminaFitPromiseModal";
 import CartCustomizationModal from "@/components/cart/CartCustomizationModal";
@@ -32,29 +29,16 @@ export default function CartDrawer() {
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isFitPromiseOpen, setIsFitPromiseOpen] = useState(false);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
+  useDialogFocus(isCartOpen, dialogRef, closeCart);
   useEffect(() => {
-    if (!isCartOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeCart();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    lockBodyScroll();
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      unlockBodyScroll();
-    };
-  }, [isCartOpen, closeCart]);
+    if (isCartOpen && !wasOpen.current) trackStoreCartView(cart.items, cart.total);
+    wasOpen.current = isCartOpen;
+  }, [isCartOpen, cart]);
 
   const handleCheckout = async () => {
-    const currency = cart.items[0]?.product.currency || "USD";
-    trackClarityInitiateCheckout(cart.items);
-    trackInitiateCheckout(cart.items, currency);
-    trackStoreCheckoutInitiated(cart.items, cart.total);
-
-    await checkout(cart.items.map(cartItemToCheckoutRequest));
+    await checkout(cart.items);
   };
 
   return (
@@ -64,6 +48,7 @@ export default function CartDrawer() {
           isCartOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         aria-hidden={!isCartOpen}
+        inert={!isCartOpen}
       >
         <button
           type="button"
@@ -73,6 +58,8 @@ export default function CartDrawer() {
           tabIndex={isCartOpen ? 0 : -1}
         />
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="Shopping cart"
@@ -134,7 +121,7 @@ export default function CartDrawer() {
                           <h3 className="font-sans font-semibold text-[#131720] text-[14px] truncate">
                             {item.product.name}
                           </h3>
-                          <p className="font-sans text-[12px] text-[#657186] truncate">
+                          <p className="font-sans text-[12px] text-[#657186] break-words leading-relaxed">
                             {formatCartConfiguration(item.configuration)}
                           </p>
                         </div>

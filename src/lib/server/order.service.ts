@@ -1,7 +1,11 @@
-import { calculateProductPrice, type PricingRequest } from './pricing.service';
+import { calculateProductPrice, resolveHandleToPriceBand, getPriceBandMatrix, type PricingRequest } from './pricing.service';
 import { getAdminApiUrl, getAdminHeaders, validateShopifyConfig } from './shopify-admin';
 import { getCachedProduct } from './product-cache';
+import { BLIND_COLOR_OPTIONS, FRAME_COLOR_OPTIONS, OPENING_DIRECTION_OPTIONS } from '@/data/customizations';
 import { BLACKOUT_PRODUCT_HANDLE } from '@/lib/product-routes';
+import { randomUUID } from 'node:crypto';
+import { normalizeDraftOrderId, isPaidFinancialStatus } from '@/lib/shopify-order-id';
+import { markAbandonedCartCheckoutStarted } from './abandoned-cart.service';
 import { recordCheckoutStarted } from './abandoned-checkout.service';
 
 // ============================================
@@ -46,6 +50,8 @@ export interface CreateCheckoutRequest {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
   referrer?: string;
   deviceType?: string;
   userAgent?: string;
@@ -182,11 +188,11 @@ async function getPrimaryVariantIdByHandle(handle: string): Promise<number | nul
     const response = await fetch(url, {
       headers: getAdminHeaders(),
       cache: 'no-store',
+      signal: AbortSignal.timeout(12_000),
     });
 
     if (!response.ok) {
-      variantIdByHandleCache.set(handle, null);
-      return null;
+      throw new CheckoutError('Unable to load the product. Please try again.', 503);
     }
 
     const data = (await response.json()) as {
@@ -201,12 +207,12 @@ async function getPrimaryVariantIdByHandle(handle: string): Promise<number | nul
           : NaN;
 
     const variantId = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    if (!variantId) throw new CheckoutError('This product is currently unavailable. Please try again later.', 503);
     variantIdByHandleCache.set(handle, variantId);
     return variantId;
   } catch (error) {
     console.error(`[OrderService] Failed variant lookup for handle "${handle}":`, error);
-    variantIdByHandleCache.set(handle, null);
-    return null;
+    throw new CheckoutError('Unable to load the product. Please try again.', 503);
   }
 }
 
@@ -229,7 +235,7 @@ export class CheckoutError extends Error {
 export async function createCheckout(request: CreateCheckoutRequest): Promise<CreateCheckoutResponse> {
   validateShopifyConfig();
 
-  if (!request.items || request.items.length === 0) {
+  if (!Array.isArray(request.items) || request.items.length === 0 || request.items.length > 100) {
     throw new CheckoutError('Cart is empty', 400);
   }
 
@@ -239,16 +245,16 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
   let subtotal = 0;
 
   for (const item of request.items) {
-    if (!item.handle) {
+    if (!item || typeof item.handle !== 'string' || !item.handle) {
       throw new CheckoutError('Each item must have a handle', 400);
     }
-    if (typeof item.widthInches !== 'number' || item.widthInches <= 0) {
+    if (!Number.isFinite(item.widthInches) || item.widthInches <= 0) {
       throw new CheckoutError('Each item must have a positive widthInches', 400);
     }
-    if (typeof item.heightInches !== 'number' || item.heightInches <= 0) {
+    if (!Number.isFinite(item.heightInches) || item.heightInches <= 0) {
       throw new CheckoutError('Each item must have a positive heightInches', 400);
     }
-    if (typeof item.quantity !== 'number' || item.quantity < 1) {
+    if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 100) {
       throw new CheckoutError('Each item must have a quantity >= 1', 400);
     }
     if (typeof item.submittedPrice !== 'number' || !Number.isFinite(item.submittedPrice) || item.submittedPrice < 0) {
@@ -256,6 +262,10 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
     }
     if (!item.configuration || typeof item.configuration !== 'object' || Array.isArray(item.configuration)) {
       throw new CheckoutError('Each item must include a configuration object', 400);
+    }
+
+    if (Object.values(item.configuration).some(value => value !== undefined && (typeof value !== 'string' || value.length > 200))) {
+      throw new CheckoutError('Invalid configuration value', 400);
     }
 
     if (item.handle === BLACKOUT_PRODUCT_HANDLE) {
@@ -271,6 +281,23 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
       throw new CheckoutError(`Product not found: ${item.handle}`, 404);
     }
 
+    if (item.handle === BLACKOUT_PRODUCT_HANDLE) {
+      const allowed = { blindColor: BLIND_COLOR_OPTIONS, frameColor: FRAME_COLOR_OPTIONS, openingDirection: OPENING_DIRECTION_OPTIONS };
+      for (const field of REQUIRED_BLACKOUT_CONFIG_FIELDS) {
+        if (!allowed[field].some(option => option.id === item.configuration[field])) {
+          throw new CheckoutError(`Invalid configuration: ${field}`, 400);
+        }
+      }
+    }
+    const band = await resolveHandleToPriceBand(item.handle);
+    const matrix = band ? await getPriceBandMatrix(band.id) : null;
+    if (!matrix?.widthBands.length || !matrix.heightBands.length) throw new CheckoutError('Pricing unavailable. Please try again.', 503);
+    const widths = matrix.widthBands.map(band => band.inches);
+    const heights = matrix.heightBands.map(band => band.inches);
+    if (item.widthInches < Math.min(...widths) || item.widthInches > Math.max(...widths) ||
+        item.heightInches < Math.min(...heights) || item.heightInches > Math.max(...heights)) {
+      throw new CheckoutError('The selected dimensions are outside the supported size range. Please edit this item.', 422);
+    }
     const productTitle = item.configuration.blindName?.trim() || cachedProduct.title;
     const customizations = configToCustomizations(item.configuration);
 
@@ -338,6 +365,7 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
     subtotal += itemPrice * item.quantity;
   }
 
+  const checkoutKey = randomUUID();
   const mutation = `
     mutation DraftOrderCreate($input: DraftOrderInput!) {
       draftOrderCreate(input: $input) {
@@ -361,6 +389,7 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
       variables: {
         input: {
           lineItems,
+          customAttributes: [{ key: '_lumina_checkout_id', value: checkoutKey }],
           useCustomerDefaultAddress: false,
           note: request.note || '',
           allowDiscountCodesInCheckout: true,
@@ -371,6 +400,7 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
       },
     }),
     cache: 'no-store',
+    signal: AbortSignal.timeout(25_000),
   });
 
   if (!response.ok) {
@@ -412,6 +442,7 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
 
   try {
     await recordCheckoutStarted({
+      checkoutKey,
       customerEmail: request.customerEmail,
       sessionId: request.sessionId,
       draftOrderId: draftOrder.id.toString(),
@@ -421,11 +452,14 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
       utmSource: request.utmSource,
       utmMedium: request.utmMedium,
       utmCampaign: request.utmCampaign,
+      utmContent: request.utmContent,
+      utmTerm: request.utmTerm,
       referrer: request.referrer,
       deviceType: request.deviceType,
       userAgent: request.userAgent,
       sessionDurationSeconds: request.sessionDurationSeconds,
     });
+    if (request.sessionId) await markAbandonedCartCheckoutStarted(request.sessionId);
   } catch (error) {
     console.error('[OrderService] Failed to record abandoned-checkout snapshot:', error);
   }
@@ -442,6 +476,7 @@ export async function getDraftOrderStatus(draftOrderId: string): Promise<{
   id: string;
   status: string;
   orderId: string | null;
+  purchased: boolean;
   orderName: string | null;
   invoiceUrl: string;
   totalPrice: string;
@@ -449,10 +484,13 @@ export async function getDraftOrderStatus(draftOrderId: string): Promise<{
 }> {
   validateShopifyConfig();
 
-  const url = getAdminApiUrl(`/draft_orders/${draftOrderId}.json`);
+  let numericId: string;
+  try { numericId = normalizeDraftOrderId(draftOrderId); } catch { throw new CheckoutError('Invalid draft order ID', 400); }
+  const url = getAdminApiUrl(`/draft_orders/${numericId}.json`);
   const response = await fetch(url, {
     headers: getAdminHeaders(),
     cache: 'no-store',
+    signal: AbortSignal.timeout(12_000),
   });
 
   if (!response.ok) {
@@ -471,7 +509,19 @@ export async function getDraftOrderStatus(draftOrderId: string): Promise<{
         ? String(draftOrder.order_id.id)
         : null;
 
+  let purchased = false;
+  if (orderId) {
+    if (!/^[1-9]\d*$/.test(orderId)) throw new CheckoutError('Invalid order response', 502);
+    const orderResponse = await fetch(getAdminApiUrl(`/orders/${orderId}.json?fields=id,financial_status`), {
+      headers: getAdminHeaders(), cache: 'no-store', signal: AbortSignal.timeout(12_000),
+    });
+    if (!orderResponse.ok) throw new CheckoutError('Unable to verify payment status', 503);
+    const orderData = await orderResponse.json();
+    purchased = isPaidFinancialStatus(orderData.order?.financial_status);
+  }
+
   return {
+    purchased,
     id: draftOrder.id.toString(),
     status: draftOrder.status,
     orderId,

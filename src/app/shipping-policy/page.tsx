@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/shipping-policy" },
   title: 'Shipping Policy - Lumina Blackout Blinds',
   description:
     'Review the Lumina Blackout Blinds shipping policy for US orders, including made-to-order production times, delivery estimates, tracking, and shipping restrictions.',

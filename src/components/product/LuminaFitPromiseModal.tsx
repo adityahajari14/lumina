@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
 import { MEASURING_GUIDE_PATH } from "@/lib/product-routes";
 
 interface PromiseSection {
@@ -102,6 +103,8 @@ interface LuminaFitPromiseModalProps {
 export default function LuminaFitPromiseModal({ open, onClose }: LuminaFitPromiseModalProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(open, dialogRef, onClose);
   if (!open) return null;
 
   const toggle = (index: number) => {
@@ -111,6 +114,8 @@ export default function LuminaFitPromiseModal({ open, onClose }: LuminaFitPromis
   return (
     <div
       className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 px-4"
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label="The Lumina Fit Promise"
@@ -146,6 +151,7 @@ export default function LuminaFitPromiseModal({ open, onClose }: LuminaFitPromis
             <div key={section.title} className="border-b border-[#dbe0e6]">
               <button
                 type="button"
+                aria-expanded={openIndex === i}
                 onClick={() => toggle(i)}
                 className="w-full flex items-center justify-between gap-3 py-5 text-left"
               >
@@ -170,6 +176,7 @@ export default function LuminaFitPromiseModal({ open, onClose }: LuminaFitPromis
                 </svg>
               </button>
               <div
+                hidden={openIndex !== i}
                 className={`overflow-hidden transition-all duration-300 ${openIndex === i ? "max-h-60 pb-5 opacity-100" : "max-h-0 opacity-0"}`}
               >
                 <div className="pl-7 font-sans text-[13px] leading-6 text-[#657186]">

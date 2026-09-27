@@ -8,17 +8,14 @@ import { useCheckout } from "@/hooks/useCheckout";
 import { getComparePriceData } from "@/lib/compare-price";
 import { formatPriceWithCurrency } from "@/lib/api";
 import { formatCartConfiguration } from "@/lib/cart-format";
-import { cartItemToCheckoutRequest } from "@/lib/checkout";
-import { trackClarityInitiateCheckout } from "@/lib/clarity";
-import { trackInitiateCheckout } from "@/lib/meta-pixel";
-import { trackStoreCartView, trackStoreCheckoutInitiated } from "@/lib/store-events";
+import { trackStoreCartView } from "@/lib/store-events";
 import { BLACKOUT_PRODUCT_PATH } from "@/lib/product-routes";
 import LuminaFitPromiseModal from "@/components/product/LuminaFitPromiseModal";
 import CartCustomizationModal from "@/components/cart/CartCustomizationModal";
 import type { CartItem } from "@/types";
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateCartItemConfiguration, updateQuantity, clearCart } = useCart();
+  const { cart, isCartReady, removeFromCart, updateCartItemConfiguration, updateQuantity, clearCart } = useCart();
   const { checkout, isCheckingOut, checkoutError } = useCheckout();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isFitPromiseOpen, setIsFitPromiseOpen] = useState(false);
@@ -31,13 +28,10 @@ export default function CartPage() {
   }, [cart]);
 
   const handleCheckout = async () => {
-    const currency = cart.items[0]?.product.currency || "USD";
-    trackClarityInitiateCheckout(cart.items);
-    trackInitiateCheckout(cart.items, currency);
-    trackStoreCheckoutInitiated(cart.items, cart.total);
-
-    await checkout(cart.items.map(cartItemToCheckoutRequest));
+    await checkout(cart.items);
   };
+
+  if (!isCartReady) return <div role="status" className="min-h-80 p-12 text-center">Loading your saved cart...</div>;
 
   if (cart.items.length === 0) {
     return (

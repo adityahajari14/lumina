@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "pricing:validate": "node scripts/validate-pricing-data.mjs",
-    "pricing:validate:shopify": "node scripts/validate-pricing-data.mjs --shopify"
+    "pricing:validate:shopify": "node scripts/validate-pricing-data.mjs --shopify",
+    "test": "node --require ./tests/register.cjs --test tests/*.test.cjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

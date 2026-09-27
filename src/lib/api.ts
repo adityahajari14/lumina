@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "./fetch-with-timeout";
 import {
   CheckoutItemRequest,
   CheckoutResponse,
@@ -33,11 +34,11 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
     };
   }
 
-  const response = await fetch(`${getApiBaseUrl()}${normalizedEndpoint}`, fetchOptions);
+  const response = await fetchWithTimeout(`${getApiBaseUrl()}${normalizedEndpoint}`, fetchOptions, normalizedEndpoint.includes("create-checkout") ? 45_000 : 12_000);
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `Request failed: ${response.status}`);
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error?.message || 'Unable to complete this request. Please try again.');
   }
 
   return response.json();
@@ -51,11 +52,15 @@ interface ApiResponse<T> {
 
 export async function fetchPriceMatrix(handle: string): Promise<PriceBandMatrix> {
   const response = await apiFetch<ApiResponse<PriceBandMatrix>>(`/api/pricing/matrix/${handle}`);
+  if (!response.success || !response.data?.widthBands?.length || !response.data?.heightBands?.length || !response.data?.prices?.length) {
+    throw new Error('Pricing is temporarily unavailable. Please try again.');
+  }
   return response.data;
 }
 
 export async function fetchCustomizationPricing(): Promise<CustomizationPricing[]> {
   const response = await apiFetch<ApiResponse<CustomizationPricing[]>>('/api/pricing/customizations');
+  if (!response.success || !Array.isArray(response.data)) throw new Error('Options are temporarily unavailable. Please try again.');
   return response.data;
 }
 
@@ -67,6 +72,7 @@ export async function validateCartPrice(
     method: 'POST',
     body: JSON.stringify({ ...request, submittedPrice }),
   });
+  if (!response.success || !Number.isFinite(response.data?.calculatedPrice) || response.data.calculatedPrice <= 0) throw new Error('Unable to confirm this price. Please try again.');
   return response.data;
 }
 
@@ -84,6 +90,8 @@ export async function createCheckout(
       utmSource: session?.utmSource,
       utmMedium: session?.utmMedium,
       utmCampaign: session?.utmCampaign,
+      utmContent: session?.utmContent,
+      utmTerm: session?.utmTerm,
       referrer: session?.referrer,
       deviceType: session?.deviceType,
       userAgent: session?.userAgent,
@@ -91,7 +99,7 @@ export async function createCheckout(
     }),
   });
 
-  if (!response.success) {
+  if (!response.success || !response.data?.draftOrderId || !response.data?.checkoutUrl || !Number.isFinite(response.data?.subtotal)) {
     throw new Error(response.error?.message || 'Failed to create checkout');
   }
 

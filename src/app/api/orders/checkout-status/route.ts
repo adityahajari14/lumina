@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDraftOrderStatus } from '@/lib/server/order.service';
+import { getDraftOrderStatus, CheckoutError } from '@/lib/server/order.service';
 
 export async function GET(request: Request) {
   const draftOrderId = new URL(request.url).searchParams.get('draftOrderId');
@@ -10,8 +10,8 @@ export async function GET(request: Request) {
 
   try {
     const status = await getDraftOrderStatus(draftOrderId);
-    return NextResponse.json({ purchased: Boolean(status.orderId) });
-  } catch {
-    return NextResponse.json({ error: 'Unable to check checkout status' }, { status: 500 });
+    return NextResponse.json({ purchased: status.purchased });
+  } catch (error) {
+    return NextResponse.json({ error: 'Unable to check checkout status' }, { status: error instanceof CheckoutError ? error.statusCode : 503 });
   }
 }

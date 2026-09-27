@@ -16,7 +16,7 @@ export interface AbandonedCartRecord {
   customerEmail: string | null;
   customerName: string | null;
   customerPhone: string | null;
-  status: 'active' | 'abandoned' | 'converted';
+  status: 'active' | 'abandoned' | 'converted' | 'checkout_started' | 'cleared';
   subtotal: number;
   items: AbandonedCartItem[];
   utmSource: string | null;
@@ -76,6 +76,7 @@ function toRecord(row: AbandonedCartRow): AbandonedCartRecord {
 
 export async function upsertAbandonedCart(params: {
   sessionId: string;
+  snapshotAt: number;
   subtotal: number;
   items: unknown[];
   utmSource?: string | null;
@@ -92,8 +93,8 @@ export async function upsertAbandonedCart(params: {
   await db.query(
     `INSERT INTO abandoned_carts
       (session_id, status, subtotal, items, utm_source, utm_medium, utm_campaign,
-       referrer, device_type, user_agent, session_duration_seconds)
-     VALUES ($1, 'active', $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       referrer, device_type, user_agent, session_duration_seconds, snapshot_at)
+     VALUES ($1, CASE WHEN jsonb_array_length($3::jsonb) = 0 THEN 'cleared' ELSE 'active' END, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      ON CONFLICT (session_id) DO UPDATE SET
        subtotal = EXCLUDED.subtotal,
        items = EXCLUDED.items,
@@ -104,8 +105,10 @@ export async function upsertAbandonedCart(params: {
        device_type = EXCLUDED.device_type,
        user_agent = EXCLUDED.user_agent,
        session_duration_seconds = EXCLUDED.session_duration_seconds,
-       status = CASE WHEN abandoned_carts.status = 'converted' THEN 'converted' ELSE 'active' END,
-       updated_at = now()`,
+       status = CASE WHEN EXCLUDED.items = abandoned_carts.items AND abandoned_carts.status IN ('checkout_started', 'converted') THEN abandoned_carts.status ELSE EXCLUDED.status END,
+       snapshot_at = EXCLUDED.snapshot_at,
+       updated_at = now()
+     WHERE EXCLUDED.snapshot_at >= abandoned_carts.snapshot_at`,
     [
       params.sessionId,
       params.subtotal,
@@ -117,6 +120,7 @@ export async function upsertAbandonedCart(params: {
       params.deviceType || null,
       params.userAgent || null,
       params.sessionDurationSeconds ?? null,
+      params.snapshotAt,
     ]
   );
 }
@@ -126,7 +130,7 @@ export async function markAbandonedCartCheckoutStarted(sessionId: string): Promi
   const db = sql();
 
   await db.query(
-    `UPDATE abandoned_carts SET status = 'converted', updated_at = now()
+    `UPDATE abandoned_carts SET status = 'checkout_started', updated_at = now()
       WHERE session_id = $1 AND status != 'converted'`,
     [sessionId]
   );
@@ -136,7 +140,7 @@ export interface CartFilters {
   days?: number;
   from?: string;
   to?: string;
-  status?: 'active' | 'abandoned' | 'converted';
+  status?: 'active' | 'abandoned' | 'converted' | 'checkout_started' | 'cleared';
   minSubtotal?: number;
   maxSubtotal?: number;
   search?: string;
