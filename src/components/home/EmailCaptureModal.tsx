@@ -5,7 +5,7 @@ import type { NewsletterSubscriptionResult } from "@/types";
 import GuaranteeBadges from "@/components/product/GuaranteeBadges";
 import { SEASONAL_SALE } from "@/lib/seasonal-theme";
 
-const ACCENT_DOT = SEASONAL_SALE ? "bg-orange-400" : "bg-emerald-400";
+const ACCENT_DOT = SEASONAL_SALE ? "bg-amber-300" : "bg-emerald-400";
 
 const DELAY_MS = 3000;
 const DISMISS_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
@@ -202,7 +202,7 @@ export default function EmailCaptureModal() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full rounded-xl py-3.5 font-sans text-[14px] font-semibold text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${SEASONAL_SALE ? "bg-orange-500 hover:bg-orange-400" : "bg-white hover:bg-white/90"}`}
+                  className={`w-full rounded-xl py-3.5 font-sans text-[14px] font-semibold text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${SEASONAL_SALE ? "bg-amber-300 hover:bg-amber-200" : "bg-white hover:bg-white/90"}`}
                 >
                   {isSubmitting ? "Submitting…" : "Claim My 10% Off"}
                 </button>

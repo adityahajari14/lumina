@@ -3,7 +3,7 @@ import Link from 'next/link';
 import SmartVideo from '../common/SmartVideo';
 import GuaranteeBadges from '@/components/product/GuaranteeBadges';
 import { BLACKOUT_PRODUCT_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-routes';
-import { BatIcon, CobwebCorner, PumpkinIcon } from '@/components/common/HalloweenDecor';
+import SaleTagIcon from '@/components/common/SaleTagIcon';
 import { SEASONAL_SALE } from '@/lib/seasonal-theme';
 
 export default function Hero() {
@@ -23,13 +23,7 @@ export default function Hero() {
         {/* Top & bottom vignette */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/50" />
         {SEASONAL_SALE && (
-          <>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_35%,rgba(249,115,22,0.16),transparent_60%)]" />
-            <CobwebCorner className="absolute top-0 right-0 text-white/15" size={200} />
-            <BatIcon className="absolute top-[16%] left-[46%] text-orange-300/25 -rotate-12 hidden lg:block" size={44} />
-            <BatIcon className="absolute top-[9%] right-[22%] text-orange-300/20 rotate-6" size={64} />
-            <BatIcon className="absolute top-[24%] right-[9%] text-orange-300/15 -rotate-6 hidden lg:block" size={32} />
-          </>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_35%,rgba(252,211,77,0.12),transparent_60%)]" />
         )}
       </div>
 
@@ -42,16 +36,16 @@ export default function Hero() {
           {SEASONAL_SALE && (
             <Link
               href={BLACKOUT_PRODUCT_PATH}
-              className="-mb-2 flex items-center gap-2 rounded-full border border-orange-400/40 bg-orange-500/15 py-2 px-4 text-orange-300 transition-colors hover:bg-orange-500/25"
+              className="-mb-2 flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/60 py-2 px-4 text-amber-200 transition-colors hover:bg-black/80"
             >
-              <PumpkinIcon className="shrink-0" />
+              <SaleTagIcon className="shrink-0" />
               <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em]">{SEASONAL_SALE.heroPill}</span>
             </Link>
           )}
 
           {/* Rating pill */}
           <div className="flex items-center gap-2.5 bg-white/8 border border-white/12 rounded-full py-2 px-4">
-            <div className={`flex gap-0.5 ${SEASONAL_SALE ? "text-orange-400" : "text-amber-400"}`}>
+            <div className={`flex gap-0.5 ${SEASONAL_SALE ? "text-amber-300" : "text-amber-400"}`}>
               {[...Array(5)].map((_, i) => (
                 <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -79,7 +73,7 @@ export default function Hero() {
           <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <Link
               href={BLACKOUT_PRODUCT_PATH}
-              className={`text-[#0a0c10] font-sans font-semibold text-[14px] text-center px-8 py-4 rounded-full transition-colors ${SEASONAL_SALE ? "bg-orange-500 hover:bg-orange-400" : "bg-white hover:bg-white/90"}`}
+              className={`text-[#0a0c10] font-sans font-semibold text-[14px] text-center px-8 py-4 rounded-full transition-colors ${SEASONAL_SALE ? "bg-amber-300 hover:bg-amber-200" : "bg-white hover:bg-white/90"}`}
             >
               Shop The Blind
             </Link>

@@ -15,14 +15,14 @@ export interface SeasonalSale {
   endsAt: string;
 }
 
-const HALLOWEEN_SALE: SeasonalSale = {
-  saleName: "Halloween Sale",
-  offerLabel: "Halloween Offer",
-  heroPill: "Halloween Sale · Up to 60% off",
-  promoCodeLabel: "Halloween offer: extra 15% off with code",
-  welcomeEyebrow: "Halloween welcome treat",
-  subscribeHeading: "A Halloween treat: 10% off.",
-  endsAt: "2026-11-01T23:59:59",
+const BLACK_FRIDAY_SALE: SeasonalSale = {
+  saleName: "Black Friday Sale",
+  offerLabel: "Black Friday Offer",
+  heroPill: "Black Friday Sale · Up to 60% off",
+  promoCodeLabel: "Black Friday offer: extra 15% off with code",
+  welcomeEyebrow: "Black Friday welcome offer",
+  subscribeHeading: "A Black Friday bonus: 10% off.",
+  endsAt: "2026-11-30T23:59:59",
 };
 
 /**
@@ -31,6 +31,11 @@ const HALLOWEEN_SALE: SeasonalSale = {
  *
  * To switch the site back to its regular look, set this to `null`.
  */
-export const SEASONAL_SALE: SeasonalSale | null = HALLOWEEN_SALE;
+export const SEASONAL_SALE: SeasonalSale | null = BLACK_FRIDAY_SALE;
 
-export const SEASONAL_SALE_ENDS_AT: Date | null = SEASONAL_SALE ? new Date(SEASONAL_SALE.endsAt) : null;
+// Keep the null check in a function so setting the switch to null also type-checks.
+function getSaleEndDate(sale: SeasonalSale | null): Date | null {
+  return sale ? new Date(sale.endsAt) : null;
+}
+
+export const SEASONAL_SALE_ENDS_AT: Date | null = getSaleEndDate(SEASONAL_SALE);
