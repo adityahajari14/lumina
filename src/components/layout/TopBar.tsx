@@ -5,7 +5,9 @@ import SaleCountdown from "@/components/common/SaleCountdown";
 import SaleTagIcon from "@/components/common/SaleTagIcon";
 import { SEASONAL_SALE } from "@/lib/seasonal-theme";
 
-const OFFER_TEXT = `${SEASONAL_SALE ? SEASONAL_SALE.saleName : "Our Biggest Sale"} | Up to 60% Off + Extra 15% with Code FINAL15`;
+const OFFER_TEXT = SEASONAL_SALE
+  ? SEASONAL_SALE.announcement
+  : "Our Biggest Sale | Up to 60% Off + Extra 15% with Code FINAL15";
 const OFFER_CODE = "FINAL15";
 
 export default function TopBar() {
@@ -23,20 +25,21 @@ export default function TopBar() {
 
   return (
     <div className={`w-full border-b bg-black ${SEASONAL_SALE ? "border-amber-400/30" : "border-white/10"}`}>
-      <div className="mx-auto flex min-h-10 max-w-[1280px] flex-col items-center justify-center gap-2 px-4 py-2 text-center sm:flex-row sm:gap-3">
+      <div className="mx-auto flex min-h-10 max-w-[1280px] flex-col items-center justify-center gap-1.5 px-4 py-2.5 text-center md:flex-row md:gap-4">
         <p className="font-sans text-[11px] font-medium uppercase tracking-[0.08em] text-white sm:text-[12px] md:text-[13px] flex items-center gap-2 flex-wrap justify-center">
           {SEASONAL_SALE && <SaleTagIcon className="shrink-0 text-amber-300" />}
           <span>{OFFER_TEXT}</span>
-          <SaleCountdown variant="topbar" />
         </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
         <button
           type="button"
           onClick={handleCopy}
-          className="inline-flex h-8 shrink-0 items-center gap-2 rounded-full border border-white/18 bg-white/8 px-3 text-white transition-colors hover:bg-white/14"
+          className={`inline-flex h-8 shrink-0 items-center gap-2 rounded-full border px-3 transition-colors ${SEASONAL_SALE ? "border-amber-300/40 bg-amber-300/10 text-amber-200 hover:bg-amber-300/20" : "border-white/18 bg-white/8 text-white hover:bg-white/14"}`}
           aria-label={copied ? `Copied discount code ${OFFER_CODE}` : `Copy discount code ${OFFER_CODE}`}
           title={copied ? "Copied" : `Copy ${OFFER_CODE}`}
         >
-          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-white sm:text-[12px]">
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] sm:text-[12px]">
+            {copied ? "Copied " : "Use "}
             {OFFER_CODE}
           </span>
           {copied ? (
@@ -50,6 +53,8 @@ export default function TopBar() {
             </svg>
           )}
         </button>
+        <SaleCountdown variant="topbar" />
+        </div>
       </div>
     </div>
   );

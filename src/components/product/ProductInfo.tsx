@@ -572,13 +572,17 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
               {deliveryRange}
             </span>
           </div>
-          <SaleCountdown variant="pdp" />
+          {!SEASONAL_SALE && <SaleCountdown variant="pdp" />}
         </div>
 
-        <GuaranteeBadges />
-
         {/* Sale offer block */}
-        <div className="rounded-xl border border-[#131720] overflow-hidden">
+        <div className={`rounded-2xl border bg-[#131720] overflow-hidden ${SEASONAL_SALE ? "border-amber-400/40" : "border-[#131720]"}`}>
+          {SEASONAL_SALE && (
+            <div className="px-4 pt-4">
+              <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-amber-200">{SEASONAL_SALE.productOfferHeading}</p>
+              <p className="mt-1 font-sans text-[16px] font-medium text-white">{SEASONAL_SALE.productOfferDescription}</p>
+            </div>
+          )}
           {/* Savings row */}
           <div className="flex items-center justify-between gap-4 bg-[#131720] px-4 py-3">
             <div className="flex items-center gap-2">
@@ -586,7 +590,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
               <span className="font-sans text-[13px] text-white/80">
-                You save <span className="font-semibold text-white">{formatPriceWithCurrency(savings, product.currency)}</span> on this order
+                You save <span className="font-semibold text-white">{formatPriceWithCurrency(savings, product.currency)}</span> {SEASONAL_SALE ? "today" : "on this order"}
               </span>
             </div>
             <span className={`shrink-0 rounded-full px-2.5 py-0.5 font-sans text-[11px] font-bold tracking-wide ${SEASONAL_SALE ? "bg-amber-300 text-[#131720]" : "bg-white/15 text-white"}`}>
@@ -619,7 +623,13 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
               )}
             </button>
           </div>
+          {SEASONAL_SALE && (
+            <div className="flex justify-start border-t border-white/10 px-4 py-3">
+              <SaleCountdown variant="hero" />
+            </div>
+          )}
         </div>
+        <div className="w-full overflow-x-auto"><GuaranteeBadges /></div>
       </div>
 
       {pricingError && (
@@ -840,6 +850,11 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           </span>
           <span className="font-sans text-[12px] font-medium text-[#4051b5]">Learn More</span>
         </button>
+        {SEASONAL_SALE && (
+          <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 font-sans text-[12px] text-[#657186]">
+            <span>Free US shipping</span><span>Fit guarantee</span><span>30-night home trial</span>
+          </p>
+        )}
         {buyNowError && (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {buyNowError}
@@ -936,6 +951,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       >
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-4 py-3 md:px-8">
           <div className="flex min-w-0 flex-col">
+            {SEASONAL_SALE && <span className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[#657186]">Black Friday price</span>}
             <div className="flex items-center gap-2">
               <span className="font-sans text-[22px] font-semibold text-[#131720]">
                 {formatPriceWithCurrency(totalPrice, product.currency)}

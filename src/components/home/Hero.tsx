@@ -4,6 +4,7 @@ import SmartVideo from '../common/SmartVideo';
 import GuaranteeBadges from '@/components/product/GuaranteeBadges';
 import { BLACKOUT_PRODUCT_PATH, MEASURING_GUIDE_PATH } from '@/lib/product-routes';
 import SaleTagIcon from '@/components/common/SaleTagIcon';
+import SaleCountdown from '@/components/common/SaleCountdown';
 import { SEASONAL_SALE } from '@/lib/seasonal-theme';
 
 export default function Hero() {
@@ -16,7 +17,7 @@ export default function Hero() {
           alt="Lumina blackout blind lifestyle"
           fill
           className="object-cover opacity-80"
-          priority
+          preload
         />
         {/* Left-to-right dark fade so text stays readable */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/5" />
@@ -28,20 +29,10 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1280px] px-6 mx-auto grid lg:grid-cols-[1fr_auto_1fr] gap-10 lg:gap-12 items-center py-28 lg:py-36">
+      <div className="relative z-10 w-full max-w-[1280px] px-6 mx-auto grid lg:grid-cols-[minmax(0,1.2fr)_auto_minmax(0,1fr)] gap-10 lg:gap-12 items-center py-16 lg:py-24">
 
         {/* Left Column */}
-        <div className="flex flex-col items-start gap-7">
-
-          {SEASONAL_SALE && (
-            <Link
-              href={BLACKOUT_PRODUCT_PATH}
-              className="-mb-2 flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/60 py-2 px-4 text-amber-200 transition-colors hover:bg-black/80"
-            >
-              <SaleTagIcon className="shrink-0" />
-              <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em]">{SEASONAL_SALE.heroPill}</span>
-            </Link>
-          )}
+        <div className="flex min-w-0 flex-col items-start gap-6">
 
           {/* Rating pill */}
           <div className="flex items-center gap-2.5 bg-white/8 border border-white/12 rounded-full py-2 px-4">
@@ -58,32 +49,63 @@ export default function Hero() {
           </div>
 
           {/* Heading */}
-          <h1 className="font-playfair font-medium text-white text-[56px] lg:text-[80px] leading-[1.0] tracking-tight">
+          <h1 className={`font-playfair font-medium text-white leading-[1.05] tracking-tight ${SEASONAL_SALE ? "text-[48px] sm:text-[56px] lg:text-[64px]" : "text-[56px] lg:text-[80px]"}`}>
+            {SEASONAL_SALE ? (
+              <>
+                {SEASONAL_SALE.heroHeading}<br />
+                <span className="font-normal italic text-amber-200">{SEASONAL_SALE.heroHeadingAccent}</span>
+              </>
+            ) : <>
             Sleep in<br />
             <span className="font-normal italic text-white/80">total</span><br />
             darkness.
+            </>}
           </h1>
 
           {/* Description */}
-          <p className="font-sans font-light text-white/55 text-[17px] leading-relaxed max-w-[420px]">
-            Wake up on your schedule, not the sun&apos;s. Lumina blocks 100% of light — no gaps, no glare. Precision-made for your window. No drills. No fuss.
+          <p className="font-sans font-light text-white/70 text-[17px] leading-relaxed max-w-[420px]">
+            {SEASONAL_SALE ? SEASONAL_SALE.heroDescription : <>Wake up on your schedule, not the sun&apos;s. Lumina blocks 100% of light — no gaps, no glare. Precision-made for your window. No drills. No fuss.</>}
           </p>
 
+          {SEASONAL_SALE && (
+            <div className="w-full max-w-[440px] rounded-2xl border border-amber-300/30 bg-black/60 p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-2 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+                  <SaleTagIcon />{SEASONAL_SALE.saleName}
+                </span>
+                <SaleCountdown variant="hero" />
+              </div>
+              <p className="font-playfair text-[34px] font-medium leading-tight text-white">{SEASONAL_SALE.heroOffer}</p>
+              <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[14px] text-white/80">
+                Plus an extra <strong className="font-semibold text-amber-200">15% off</strong> with
+                <span className="rounded-md border border-amber-200/25 px-2 py-1 font-mono text-[13px] font-semibold tracking-wider text-amber-200">FINAL15</span>
+              </p>
+            </div>
+          )}
+
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-1">
+          <div className="flex w-full flex-col sm:flex-row gap-3 pt-1">
             <Link
               href={BLACKOUT_PRODUCT_PATH}
-              className={`text-[#0a0c10] font-sans font-semibold text-[14px] text-center px-8 py-4 rounded-full transition-colors ${SEASONAL_SALE ? "bg-amber-300 hover:bg-amber-200" : "bg-white hover:bg-white/90"}`}
+              className={`text-[#0a0c10] font-sans font-semibold text-[14px] text-center px-6 py-4 rounded-full transition-colors ${SEASONAL_SALE ? "bg-amber-300 hover:bg-amber-200" : "bg-white hover:bg-white/90"}`}
             >
-              Shop The Blind
+              {SEASONAL_SALE ? SEASONAL_SALE.heroCta : "Shop The Blind"}
             </Link>
             <Link
               href={MEASURING_GUIDE_PATH}
-              className="border border-white/25 text-white/80 font-sans font-medium text-[14px] text-center px-8 py-4 rounded-full hover:bg-white/8 hover:text-white transition-colors"
+              className="border border-white/25 text-white/80 font-sans font-medium text-[14px] text-center px-6 py-4 rounded-full hover:bg-white/8 hover:text-white transition-colors"
             >
               How to Measure
             </Link>
           </div>
+
+          {SEASONAL_SALE && (
+            <ul className="-mt-2 flex flex-wrap gap-x-4 gap-y-2 font-sans text-[12px] text-white/75" aria-label="Order benefits">
+              {["Free US shipping", "Fit guarantee", "30-night home trial"].map((benefit) => (
+                <li key={benefit} className="inline-flex items-center gap-1.5"><span className="text-amber-200" aria-hidden="true">✓</span>{benefit}</li>
+              ))}
+            </ul>
+          )}
 
           {/* Stats row */}
           <div className="flex items-center gap-0 pt-3 border-t border-white/8 w-full max-w-[420px]">
@@ -103,12 +125,12 @@ export default function Hero() {
           </div>
 
           {/* Free shipping note */}
-          <div className="flex items-center gap-2 text-white/35 -mt-2">
+          {!SEASONAL_SALE && <div className="flex items-center gap-2 text-white/35 -mt-2">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
             </svg>
             <span className="font-sans text-[12px] tracking-wide">Free shipping across the USA on every order</span>
-          </div>
+          </div>}
 
           {/* Guarantee stamps (small screens) */}
           <div className="lg:hidden w-full overflow-x-auto">

@@ -3,8 +3,17 @@ export interface SeasonalSale {
   saleName: string;
   /** Short pill label used on the homepage popup */
   offerLabel: string;
-  /** Hero pill text */
-  heroPill: string;
+  /** Short offer message for the announcement bar */
+  announcement: string;
+  /** Homepage headline, supporting copy, and primary action */
+  heroHeading: string;
+  heroHeadingAccent: string;
+  heroDescription: string;
+  heroOffer: string;
+  heroCta: string;
+  /** Heading and supporting line above the product's savings */
+  productOfferHeading: string;
+  productOfferDescription: string;
   /** Prefix for the PDP promo code row */
   promoCodeLabel: string;
   /** Eyebrow above the popup's 10% welcome offer */
@@ -18,8 +27,15 @@ export interface SeasonalSale {
 const BLACK_FRIDAY_SALE: SeasonalSale = {
   saleName: "Black Friday Sale",
   offerLabel: "Black Friday Offer",
-  heroPill: "Black Friday Sale · Up to 60% off",
-  promoCodeLabel: "Black Friday offer: extra 15% off with code",
+  announcement: "Black Friday: Up to 60% off + extra 15%",
+  heroHeading: "Better sleep.",
+  heroHeadingAccent: "Black Friday prices.",
+  heroDescription: "Custom-fit blackout blinds for deeper sleep. No drills. No fuss.",
+  heroOffer: "Up to 60% off",
+  heroCta: "Shop Black Friday",
+  productOfferHeading: "Your Black Friday price.",
+  productOfferDescription: "Extra savings at checkout.",
+  promoCodeLabel: "Take an extra 15% off at checkout with",
   welcomeEyebrow: "Black Friday welcome offer",
   subscribeHeading: "A Black Friday bonus: 10% off.",
   endsAt: "2026-11-30T23:59:59",
