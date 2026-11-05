@@ -541,7 +541,7 @@ export default function TermsOfServicePage() {
             <a href="mailto:info@luminablackoutblinds.com" className="underline">
               info@luminablackoutblinds.com
             </a>{' '}
-            or write to us at Carlinghow Mills, UNIT C2, Batley, ENG, WF17 8LL, GB.
+            or write to us at UNIT C2 carlinghow Mills, 501 Bradford Road Batley WF178LL UK.
           </p>
         </div>
       </div>
