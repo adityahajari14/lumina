@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-07-02T14:02:06.430Z",
   "source": "blackout-blinds-db-export",
-  "checksum": "81ffeb0fea534eb269b620e832679379fa790b9226eb25a7f2a4553b70c8bab2",
+  "checksum": "81d36d7523013c6487a86c704bfc631dd646ee3d5dc45b1131f23c5e05d168db",
   "counts": {
     "priceBands": 1,
     "widthBands": 14,
