@@ -1,6 +1,6 @@
 # Black Friday sale theme
 
-The November 2026 campaign re-labels the existing offers as Black Friday offers and applies a black, white, and gold theme with sale-tag icons. It does not change discounts, prices, or codes: `FINAL15` and the 10% subscriber offer work exactly as before.
+The November 2026 campaign re-labels the existing offers as Black Friday offers and applies a black, white, and gold theme with sale-tag icons. It does not change the `FINAL15` offer. The email signup offer is now 15% off with code `SUBSCRIBE15`, and the Split opening direction surcharge is $75.
 
 Everything is driven by `SEASONAL_SALE` in `src/lib/seasonal-theme.ts`.
 
@@ -34,7 +34,7 @@ Before the final three days, the announcement bar, hero offer, and product offer
 | Homepage hero | `src/components/home/Hero.tsx` | "Better sleep. Black Friday prices.", prominent savings and code block, "Shop Black Friday", shipping and guarantee reassurance, subtle gold glow | Regular sleep headline, no offer block or glow, white button, regular amber stars |
 | Product page | `src/components/product/ProductInfo.tsx` | Savings, extra 15% code, and deadline together beside the price; shipping and guarantee reassurance by purchase buttons; gold badges and Buy Now buttons | Regular price and promo wording, dark badges and Buy Now buttons |
 | Homepage popup | `src/components/home/EmailCaptureModal.tsx` | "Black Friday Offer", "Black Friday welcome offer", gold dots and button | "Limited Offer", "Exclusive welcome offer", green dots, white button |
-| Subscribe section | `src/components/home/SubscribeOffer.tsx` | "A Black Friday bonus: 10% off." | "Subscribe for 10% off." |
+| Subscribe section | `src/components/home/SubscribeOffer.tsx` | "A Black Friday bonus: 15% off." | "Subscribe for 15% off." |
 
 All campaign copy and the deadline live in `BLACK_FRIDAY_SALE`. The decorative sale-tag icon is an inline SVG in `src/components/common/SaleTagIcon.tsx`.
 
@@ -52,4 +52,4 @@ Keep the reusable `useCountdown(target)` hook and the countdown-owned "Ends in" 
 
 ## Unchanged
 
-Shopify checkout, discount codes, pricing calculations, the 10% email signup popup and subscribe section, subscriber behaviour, emails, product photos, page metadata, and the Shopify draft theme in `shopify/`.
+Shopify checkout, discount codes, pricing calculations, the 15% email signup popup and subscribe section, subscriber behaviour, emails, product photos, page metadata, and the Shopify draft theme in `shopify/`.

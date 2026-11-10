@@ -16,7 +16,7 @@ export interface SeasonalSale {
   productOfferDescription: string;
   /** Prefix for the PDP promo code row */
   promoCodeLabel: string;
-  /** Eyebrow above the popup's 10% welcome offer */
+  /** Eyebrow above the popup's 15% welcome offer */
   welcomeEyebrow: string;
   /** Heading of the homepage subscribe section */
   subscribeHeading: string;
@@ -37,7 +37,7 @@ const BLACK_FRIDAY_SALE: SeasonalSale = {
   productOfferDescription: "Extra savings at checkout.",
   promoCodeLabel: "Take an extra 15% off at checkout with",
   welcomeEyebrow: "Black Friday welcome offer",
-  subscribeHeading: "A Black Friday bonus: 10% off.",
+  subscribeHeading: "A Black Friday bonus: 15% off.",
   endsAt: "2026-11-30T23:59:59",
 };
 

@@ -179,7 +179,7 @@
         "type": "text",
         "id": "popup_heading",
         "label": "Heading",
-        "default": "10% off"
+        "default": "15% off"
       },
       {
         "type": "text",

@@ -334,7 +334,7 @@ export async function subscribeEmailToNewsletter(email: string): Promise<Subscri
     code: NEWSLETTER_PARENT_CODE,
     email: normalizedEmail,
     message: customerSignup.created
-      ? 'You are subscribed. Your 10% code is ready.'
-      : 'Your 10% code is ready.',
+      ? 'You are subscribed. Your 15% code is ready.'
+      : 'Your 15% code is ready.',
   };
 }

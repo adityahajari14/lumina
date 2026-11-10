@@ -63,7 +63,7 @@ export const OPENING_DIRECTION_OPTIONS: PriceOption[] = [
   {
     id: 'split',
     name: 'Split',
-    price: 35,
+    price: 75,
   },
 ];
 

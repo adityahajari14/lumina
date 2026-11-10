@@ -119,7 +119,7 @@ for(const [id,title,file] of [['key-features','Key features','ProductKeyFeatures
  $('input[type="email"]').attr('name','contact[email]').removeAttr('value');
  const form=$('form'); const inner=form.html();
  form.replaceWith(`{% form 'customer', id: 'LuminaNewsletter', class: 'flex flex-col gap-4' %}<input type="hidden" name="contact[tags]" value="newsletter">${inner}{% if form.posted_successfully? %}<p role="status" class="text-white">Thanks for subscribing.</p>{% endif %}{{ form.errors | default_errors }}{% endform %}`);
- section('lumina-newsletter','Newsletter',$.html().replaceAll('Subscribe for 10% off.','{{ section.settings.heading | escape }}').replaceAll('Product updates, measuring guidance, and a 10% code for your first order.','{{ section.settings.description | escape }}'),{settings:[textSetting('heading','Heading','Subscribe for 10% off.'),textSetting('description','Description','Product updates, measuring guidance, and a 10% code for your first order.')]});
+ section('lumina-newsletter','Newsletter',$.html().replaceAll('Subscribe for 15% off.','{{ section.settings.heading | escape }}').replaceAll('Product updates, measuring guidance, and a 15% code for your first order.','{{ section.settings.description | escape }}'),{settings:[textSetting('heading','Heading','Subscribe for 15% off.'),textSetting('description','Description','Product updates, measuring guidance, and a 15% code for your first order.')]});
 }
 const { buildAccordionItems }=require(path.join(root,'src/lib/blackout-product.ts'));
 const { SECTIONS:promiseSections }=require(path.join(root,'src/components/product/LuminaFitPromiseModal.tsx'));
@@ -151,7 +151,7 @@ const product={id:'preview',name:'LUMINA_PRODUCT_TITLE',slug:'honeycomb-blackout
  $('span').filter((_,el)=>$(el).text().startsWith('You save ')).closest('div.flex.items-center.justify-between').attr('data-savings-row','');
  $('[data-savings-row]').before('{% if product.compare_at_price > product.price %}').after('{% endif %}');
  let info=$.html().replaceAll('&gt;', '>').replaceAll('LUMINA_PRODUCT_TITLE','{{ product.title | escape }}').replaceAll('LUMINA_PRODUCT_DESCRIPTION','{{ product.description }}')
- .replaceAll('LUMINA_MONEY_497.5_END','{{ product.compare_at_price | money }}').replaceAll('LUMINA_MONEY_299_END','{{ product.compare_at_price | minus: product.price | money }}').replaceAll('LUMINA_MONEY_199_END','{{ product.price | money }}').replaceAll('LUMINA_MONEY_35_END','{{ 3500 | money }}')
+ .replaceAll('LUMINA_MONEY_497.5_END','{{ product.compare_at_price | money }}').replaceAll('LUMINA_MONEY_299_END','{{ product.compare_at_price | minus: product.price | money }}').replaceAll('LUMINA_MONEY_199_END','{{ product.price | money }}').replaceAll('LUMINA_MONEY_75_END','{{ 7500 | money }}')
  .replace(/Delivered by [^<]+/g,'Delivered in 7–11 business days')
  .replace(/(<button[^>]*data-(?:add-to-cart|buy-now)="")/g,'$1 {% unless settings.enable_purchasing and product.available and section.blocks.size > 0 %}disabled{% endunless %}');
  // Use actual compare-at pricing instead of carrying the old calculated discount to Shopify.

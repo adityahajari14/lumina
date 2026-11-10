@@ -100,7 +100,7 @@ export default function EmailCaptureModal() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Get 10% off your first order">
+    <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Get 15% off your first order">
 
       {/* Left panel: image */}
       <div className="relative hidden md:block md:w-[55%]">
@@ -178,7 +178,7 @@ export default function EmailCaptureModal() {
                   {SEASONAL_SALE ? SEASONAL_SALE.welcomeEyebrow : "Exclusive welcome offer"}
                 </p>
                 <div className="flex items-end gap-3 mt-1">
-                  <span className="font-playfair text-[64px] font-medium leading-none text-white">10%</span>
+                  <span className="font-playfair text-[64px] font-medium leading-none text-white">15%</span>
                   <span className="font-playfair text-[32px] font-medium leading-none text-white/60 pb-2">off</span>
                 </div>
                 <p className="font-sans text-[13px] text-white/70 mt-1">your first order</p>
@@ -204,7 +204,7 @@ export default function EmailCaptureModal() {
                   disabled={isSubmitting}
                   className={`w-full rounded-xl py-3.5 font-sans text-[14px] font-semibold text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${SEASONAL_SALE ? "bg-amber-300 hover:bg-amber-200" : "bg-white hover:bg-white/90"}`}
                 >
-                  {isSubmitting ? "Submitting…" : "Claim My 10% Off"}
+                  {isSubmitting ? "Submitting…" : "Claim My 15% Off"}
                 </button>
               </form>
 
