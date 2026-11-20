@@ -10,6 +10,14 @@ import {
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { useDialogFocus } from "@/hooks/useDialogFocus";
 import {
+  buildSizeLimitMessage,
+  getDisplayLimits,
+  getSizeLimitsMm,
+  inchesToMm,
+  isSizeWithinLimits,
+  type SizeLimitsMm,
+} from "@/lib/size-limits";
+import {
   BLIND_COLOR_OPTIONS,
   FRAME_COLOR_OPTIONS,
   OPENING_DIRECTION_OPTIONS,
@@ -108,29 +116,25 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
     };
   }, [priceMatrix]);
 
-  const widthLimits = useMemo(() => {
-    if (unit === "in") {
-      const min = sizeRanges?.minWidth ?? 20;
-      const max = sizeRanges?.maxWidth ?? 157;
-      return { min, max, placeholder: `${min}-${max}` };
-    }
+  // Size limits depend on the opening direction (see src/lib/size-limits.ts).
+  const activeLimitsMm = useMemo<SizeLimitsMm | null>(() => {
+    const directionLimits = getSizeLimitsMm(draftConfig?.openingDirection);
+    if (directionLimits) return directionLimits;
+    if (!sizeRanges) return null;
+    return {
+      minWidth: inchesToMm(sizeRanges.minWidth),
+      maxWidth: inchesToMm(sizeRanges.maxWidth),
+      minHeight: inchesToMm(sizeRanges.minHeight),
+      maxHeight: inchesToMm(sizeRanges.maxHeight),
+    };
+  }, [draftConfig?.openingDirection, sizeRanges]);
 
-    const min = sizeRanges?.minWidth ? Math.round(sizeRanges.minWidth * 2.54) : 50;
-    const max = sizeRanges?.maxWidth ? Math.round(sizeRanges.maxWidth * 2.54) : 400;
-    return { min, max, placeholder: `${min}-${max}` };
-  }, [sizeRanges, unit]);
-
-  const heightLimits = useMemo(() => {
-    if (unit === "in") {
-      const min = sizeRanges?.minHeight ?? 20;
-      const max = sizeRanges?.maxHeight ?? 118;
-      return { min, max, placeholder: `${min}-${max}` };
-    }
-
-    const min = sizeRanges?.minHeight ? Math.round(sizeRanges.minHeight * 2.54) : 50;
-    const max = sizeRanges?.maxHeight ? Math.round(sizeRanges.maxHeight * 2.54) : 300;
-    return { min, max, placeholder: `${min}-${max}` };
-  }, [sizeRanges, unit]);
+  const displayLimits = useMemo(
+    () => (activeLimitsMm ? getDisplayLimits(activeLimitsMm, unit) : null),
+    [activeLimitsMm, unit]
+  );
+  const widthLimits = displayLimits?.width ?? { min: 0, max: 0, placeholder: "Width" };
+  const heightLimits = displayLimits?.height ?? { min: 0, max: 0, placeholder: "Height" };
 
   const totalPrice = useMemo(() => {
     if (!item || !draftConfig) return 0;
@@ -169,12 +173,17 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
     (direction) => direction.id === draftConfig.openingDirection
   );
 
+  const isSizeLocked = item.product.features.hasOpeningDirection && !draftConfig.openingDirection;
+  const sizeInches = {
+    width: getTotalInches(draftConfig.width, draftConfig.widthFraction, draftConfig.widthUnit),
+    height: getTotalInches(draftConfig.height, draftConfig.heightFraction, draftConfig.heightUnit),
+  };
   const hasValidSize =
     !item.product.features.hasSize ||
-    (draftConfig.width >= widthLimits.min &&
-      draftConfig.width <= widthLimits.max &&
-      draftConfig.height >= heightLimits.min &&
-      draftConfig.height <= heightLimits.max);
+    (!isSizeLocked &&
+      sizeInches.width > 0 &&
+      sizeInches.height > 0 &&
+      (!activeLimitsMm || isSizeWithinLimits(sizeInches.width, sizeInches.height, activeLimitsMm)));
 
   const hasRequiredCustomizations =
     (!item.product.features.hasBlindColor || Boolean(draftConfig.blindColor)) &&
@@ -270,6 +279,70 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
 
         <div className="px-5 py-6 md:px-7 flex flex-col gap-7">
           {pricingLoaded && !priceMatrix && <button type="button" className="text-sm underline" onClick={() => setPricingAttempt(attempt => attempt + 1)}>Retry pricing</button>}
+          {item.product.features.hasBlindColor && (
+            <div className="flex flex-col gap-2">
+              <span className="font-sans text-[14px]">
+                <span className="font-semibold text-[#131720]">Blind Colour: </span>
+                <span className="text-[#657186]">{selectedBlindColor?.name || "Select a colour"}</span>
+              </span>
+              <div className="flex flex-wrap gap-3">
+                {BLIND_COLOR_OPTIONS.map((color) => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    onClick={() => updateDraftConfig({ blindColor: color.id })}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${draftConfig.blindColor === color.id ? "ring-2 ring-offset-2 ring-[#131720]" : "ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50"}`}
+                    style={{ backgroundColor: color.hex }}
+                    aria-label={`Select ${color.name}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {item.product.features.hasOpeningDirection && (
+            <div className="flex flex-col gap-2">
+              <span className="font-sans text-[14px]">
+                <span className="font-semibold text-[#131720]">Opening Direction: </span>
+                <span className="text-[#657186]">{selectedOpeningDirection?.name || "Select direction"}</span>
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {OPENING_DIRECTION_OPTIONS.map((direction) => (
+                  <button
+                    key={direction.id}
+                    type="button"
+                    onClick={() => updateDraftConfig({ openingDirection: direction.id })}
+                    className={`px-4 py-2 rounded-full border text-sm transition-colors ${draftConfig.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
+                  >
+                    {direction.name}
+                    {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, item.product.currency)})` : ""}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {item.product.features.hasFrameColor && (
+            <div className="flex flex-col gap-2">
+              <span className="font-sans text-[14px]">
+                <span className="font-semibold text-[#131720]">Frame Colour: </span>
+                <span className="text-[#657186]">{selectedFrameColor?.name || "Select a colour"}</span>
+              </span>
+              <div className="flex flex-wrap gap-3">
+                {FRAME_COLOR_OPTIONS.map((color) => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    onClick={() => updateDraftConfig({ frameColor: color.id })}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${draftConfig.frameColor === color.id ? "ring-2 ring-offset-2 ring-[#131720]" : "ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50"}`}
+                    style={{ backgroundColor: color.hex }}
+                    aria-label={`Select ${color.name}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
               <span className="font-sans font-semibold text-[14px] text-[#131720]">
@@ -301,6 +374,8 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
                   type="number"
                   min={widthLimits.min}
                   max={widthLimits.max}
+                  step="any"
+                  disabled={isSizeLocked}
                   value={draftConfig.width || ""}
                   onChange={(event) => updateDraftConfig({ width: Number(event.target.value) || 0 })}
                   placeholder={widthLimits.placeholder}
@@ -314,6 +389,8 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
                   type="number"
                   min={heightLimits.min}
                   max={heightLimits.max}
+                  step="any"
+                  disabled={isSizeLocked}
                   value={draftConfig.height || ""}
                   onChange={(event) => updateDraftConfig({ height: Number(event.target.value) || 0 })}
                   placeholder={heightLimits.placeholder}
@@ -321,76 +398,16 @@ export default function CartCustomizationModal({ item, onClose, onSave }: CartCu
                 />
               </div>
             </div>
-            {!hasValidSize && (
-              <p className="text-[13px] text-red-600">
-                Enter a size between {widthLimits.min}-{widthLimits.max}{unit} wide and {heightLimits.min}-{heightLimits.max}{unit} high.
+            {isSizeLocked ? (
+              <p className="text-[13px] text-[#657186]">Choose an opening direction above to see the allowed sizes.</p>
+            ) : activeLimitsMm && displayLimits ? (
+              <p className={`text-[13px] ${hasValidSize ? "text-[#657186]" : "text-red-600"}`}>
+                {hasValidSize || (sizeInches.width <= 0 && sizeInches.height <= 0)
+                  ? `Allowed: width ${displayLimits.width.placeholder} ${unit}, height ${displayLimits.height.placeholder} ${unit}.`
+                  : buildSizeLimitMessage(activeLimitsMm, unit)}
               </p>
-            )}
+            ) : null}
           </div>
-
-          {item.product.features.hasBlindColor && (
-            <div className="flex flex-col gap-2">
-              <span className="font-sans text-[14px]">
-                <span className="font-semibold text-[#131720]">Blind Colour: </span>
-                <span className="text-[#657186]">{selectedBlindColor?.name || "Select a colour"}</span>
-              </span>
-              <div className="flex flex-wrap gap-3">
-                {BLIND_COLOR_OPTIONS.map((color) => (
-                  <button
-                    key={color.id}
-                    type="button"
-                    onClick={() => updateDraftConfig({ blindColor: color.id })}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${draftConfig.blindColor === color.id ? "ring-2 ring-offset-2 ring-[#131720]" : "ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50"}`}
-                    style={{ backgroundColor: color.hex }}
-                    aria-label={`Select ${color.name}`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {item.product.features.hasFrameColor && (
-            <div className="flex flex-col gap-2">
-              <span className="font-sans text-[14px]">
-                <span className="font-semibold text-[#131720]">Frame Colour: </span>
-                <span className="text-[#657186]">{selectedFrameColor?.name || "Select a colour"}</span>
-              </span>
-              <div className="flex flex-wrap gap-3">
-                {FRAME_COLOR_OPTIONS.map((color) => (
-                  <button
-                    key={color.id}
-                    type="button"
-                    onClick={() => updateDraftConfig({ frameColor: color.id })}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${draftConfig.frameColor === color.id ? "ring-2 ring-offset-2 ring-[#131720]" : "ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50"}`}
-                    style={{ backgroundColor: color.hex }}
-                    aria-label={`Select ${color.name}`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {item.product.features.hasOpeningDirection && (
-            <div className="flex flex-col gap-2">
-              <span className="font-sans text-[14px]">
-                <span className="font-semibold text-[#131720]">Opening Direction: </span>
-                <span className="text-[#657186]">{selectedOpeningDirection?.name || "Select direction"}</span>
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {OPENING_DIRECTION_OPTIONS.map((direction) => (
-                  <button
-                    key={direction.id}
-                    type="button"
-                    onClick={() => updateDraftConfig({ openingDirection: direction.id })}
-                    className={`px-4 py-2 rounded-full border text-sm transition-colors ${draftConfig.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
-                  >
-                    {direction.name}
-                    {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, item.product.currency)})` : ""}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="flex flex-col gap-3 border-t border-[#eaedf0] pt-5">
             <div className="flex items-center justify-between gap-4">

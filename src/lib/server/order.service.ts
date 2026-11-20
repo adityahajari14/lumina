@@ -1,6 +1,7 @@
 import { calculateProductPrice, resolveHandleToPriceBand, getPriceBandMatrix, type PricingRequest } from './pricing.service';
 import { getAdminApiUrl, getAdminHeaders, validateShopifyConfig } from './shopify-admin';
 import { getCachedProduct } from './product-cache';
+import { getSizeLimitsMm, isSizeWithinLimits } from "@/lib/size-limits";
 import { BLIND_COLOR_OPTIONS, FRAME_COLOR_OPTIONS, OPENING_DIRECTION_OPTIONS } from '@/data/customizations';
 import { BLACKOUT_PRODUCT_HANDLE } from '@/lib/product-routes';
 import { randomUUID } from 'node:crypto';
@@ -292,10 +293,16 @@ export async function createCheckout(request: CreateCheckoutRequest): Promise<Cr
     const band = await resolveHandleToPriceBand(item.handle);
     const matrix = band ? await getPriceBandMatrix(band.id) : null;
     if (!matrix?.widthBands.length || !matrix.heightBands.length) throw new CheckoutError('Pricing unavailable. Please try again.', 503);
+    // Blackout blinds: limits depend on opening direction. Sizes above the largest
+    // price band are allowed and priced at the largest band (see pricing.service).
+    const directionLimits = item.handle === BLACKOUT_PRODUCT_HANDLE ? getSizeLimitsMm(item.configuration.openingDirection) : null;
     const widths = matrix.widthBands.map(band => band.inches);
     const heights = matrix.heightBands.map(band => band.inches);
-    if (item.widthInches < Math.min(...widths) || item.widthInches > Math.max(...widths) ||
-        item.heightInches < Math.min(...heights) || item.heightInches > Math.max(...heights)) {
+    const withinSupportedRange = directionLimits
+      ? isSizeWithinLimits(item.widthInches, item.heightInches, directionLimits)
+      : item.widthInches >= Math.min(...widths) && item.widthInches <= Math.max(...widths) &&
+        item.heightInches >= Math.min(...heights) && item.heightInches <= Math.max(...heights);
+    if (!withinSupportedRange) {
       throw new CheckoutError('The selected dimensions are outside the supported size range. Please edit this item.', 422);
     }
     const productTitle = item.configuration.blindName?.trim() || cachedProduct.title;

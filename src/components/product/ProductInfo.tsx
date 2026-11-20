@@ -9,6 +9,16 @@ import { useCart } from "@/context/CartContext";
 import { useCheckout } from "@/hooks/useCheckout";
 import { calculateTotalPrice, configToCustomizations, getTotalInches } from "@/lib/pricing";
 import { getComparePriceData } from "@/lib/compare-price";
+import {
+  buildSizeLimitMessage,
+  getDisplayLimits,
+  getSizeLimitsMm,
+  inchesToMm,
+  isHeightWithinLimits,
+  isSizeWithinLimits,
+  isWidthWithinLimits,
+  type SizeLimitsMm,
+} from "@/lib/size-limits";
 import { fetchCustomizationPricing, fetchPriceMatrix, formatPriceWithCurrency, validateCartPrice } from "@/lib/api";
 import { getReviewSummary } from "@/data/reviews";
 import {
@@ -93,7 +103,7 @@ function ProductRatingStars({ rating }: { rating: number }) {
 
 type CustomizationField = "size" | "blindColor" | "frameColor" | "openingDirection";
 
-const FIELD_ORDER: CustomizationField[] = ["size", "blindColor", "frameColor", "openingDirection"];
+const FIELD_ORDER: CustomizationField[] = ["blindColor", "openingDirection", "frameColor", "size"];
 
 export default function ProductInfo({ product, initialReviewsData }: ProductInfoProps) {
   const { addToCart, isCartReady } = useCart();
@@ -313,29 +323,50 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
 
   const unit = config.widthUnit === "cm" ? "cm" : "in";
 
-  const widthLimits = useMemo(() => {
-    if (unit === "in") {
-      const min = sizeRanges?.minWidth ?? 20;
-      const max = sizeRanges?.maxWidth ?? 157;
-      return { min, max, placeholder: `${min}-${max}` };
-    }
+  // Size limits depend on the opening direction (see src/lib/size-limits.ts).
+  // Products without an opening direction fall back to the price matrix range.
+  const directionLimitsMm = useMemo(() => getSizeLimitsMm(config.openingDirection), [config.openingDirection]);
 
-    const min = sizeRanges?.minWidth ? Math.round(sizeRanges.minWidth * 2.54) : 50;
-    const max = sizeRanges?.maxWidth ? Math.round(sizeRanges.maxWidth * 2.54) : 400;
-    return { min, max, placeholder: `${min}-${max}` };
-  }, [sizeRanges, unit]);
+  const activeLimitsMm = useMemo<SizeLimitsMm | null>(() => {
+    if (directionLimitsMm) return directionLimitsMm;
+    if (!sizeRanges) return null;
+    return {
+      minWidth: inchesToMm(sizeRanges.minWidth),
+      maxWidth: inchesToMm(sizeRanges.maxWidth),
+      minHeight: inchesToMm(sizeRanges.minHeight),
+      maxHeight: inchesToMm(sizeRanges.maxHeight),
+    };
+  }, [directionLimitsMm, sizeRanges]);
 
-  const heightLimits = useMemo(() => {
-    if (unit === "in") {
-      const min = sizeRanges?.minHeight ?? 20;
-      const max = sizeRanges?.maxHeight ?? 118;
-      return { min, max, placeholder: `${min}-${max}` };
-    }
+  const displayLimits = useMemo(
+    () => (activeLimitsMm ? getDisplayLimits(activeLimitsMm, unit) : null),
+    [activeLimitsMm, unit]
+  );
 
-    const min = sizeRanges?.minHeight ? Math.round(sizeRanges.minHeight * 2.54) : 50;
-    const max = sizeRanges?.maxHeight ? Math.round(sizeRanges.maxHeight * 2.54) : 300;
-    return { min, max, placeholder: `${min}-${max}` };
-  }, [sizeRanges, unit]);
+  const widthLimits = displayLimits?.width ?? { min: 0, max: 0, placeholder: "Width" };
+  const heightLimits = displayLimits?.height ?? { min: 0, max: 0, placeholder: "Height" };
+
+  const isSizeLocked = product.features.hasOpeningDirection && !config.openingDirection;
+
+  const liveSizeError = useMemo(() => {
+    if (!activeLimitsMm || isSizeLocked) return null;
+    const widthInches = getTotalInches(config.width, config.widthFraction, config.widthUnit);
+    const heightInches = getTotalInches(config.height, config.heightFraction, config.heightUnit);
+    const widthBad = widthInches > 0 && !isWidthWithinLimits(widthInches, activeLimitsMm);
+    const heightBad = heightInches > 0 && !isHeightWithinLimits(heightInches, activeLimitsMm);
+    if (!widthBad && !heightBad) return null;
+    return buildSizeLimitMessage(activeLimitsMm, unit);
+  }, [
+    activeLimitsMm,
+    config.height,
+    config.heightFraction,
+    config.heightUnit,
+    config.width,
+    config.widthFraction,
+    config.widthUnit,
+    isSizeLocked,
+    unit,
+  ]);
 
   const clearFieldError = (field: CustomizationField) => {
     setFieldErrors((prev) => {
@@ -373,20 +404,13 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
     if (product.features.hasSize) {
       const widthInches = getTotalInches(config.width, config.widthFraction, config.widthUnit);
       const heightInches = getTotalInches(config.height, config.heightFraction, config.heightUnit);
-      const minWidthInches = sizeRanges?.minWidth ?? 20;
-      const maxWidthInches = sizeRanges?.maxWidth ?? 157;
-      const minHeightInches = sizeRanges?.minHeight ?? 20;
-      const maxHeightInches = sizeRanges?.maxHeight ?? 118;
 
-      if (widthInches <= 0 || heightInches <= 0) {
+      if (isSizeLocked) {
+        errors.size = "Please select an opening direction first.";
+      } else if (widthInches <= 0 || heightInches <= 0) {
         errors.size = "Please enter your window width and height.";
-      } else if (
-        widthInches < minWidthInches ||
-        widthInches > maxWidthInches ||
-        heightInches < minHeightInches ||
-        heightInches > maxHeightInches
-      ) {
-        errors.size = `Width must be ${widthLimits.min}-${widthLimits.max} ${unit} and height ${heightLimits.min}-${heightLimits.max} ${unit}.`;
+      } else if (activeLimitsMm && !isSizeWithinLimits(widthInches, heightInches, activeLimitsMm)) {
+        errors.size = buildSizeLimitMessage(activeLimitsMm, unit);
       }
     }
 
@@ -640,6 +664,111 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
       )}
       {actionError && <p role="alert" className="text-sm text-red-700">{actionError}</p>}
 
+      {/* Colors */}
+      <div className="flex flex-col gap-4 mt-6">
+        <div
+          ref={blindColorSectionRef}
+          className={`flex flex-col gap-2 scroll-mt-28 ${fieldErrors.blindColor ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+        >
+          <span className="font-sans text-[14px]">
+            <span className="font-semibold text-[#131720]">Blind Color — </span>
+            <span className="text-[#657186]">{selectedBlindColor?.name}</span>
+          </span>
+          <div className="flex gap-3">
+            {BLIND_COLOR_OPTIONS.map((color) => (
+              <button
+                key={color.id}
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, blindColor: color.id }));
+                  clearFieldError("blindColor");
+                }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.blindColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : fieldErrors.blindColor ? 'ring-1 ring-[#dc2626] hover:ring-[#131720]/50' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
+                style={{ backgroundColor: color.hex }}
+                aria-label={`Select ${color.name}`}
+              />
+            ))}
+          </div>
+          {fieldErrors.blindColor ? (
+            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+              {fieldErrors.blindColor}
+            </p>
+          ) : null}
+        </div>
+
+        <div
+          ref={openingDirectionSectionRef}
+          className={`flex flex-col gap-2 mt-2 scroll-mt-28 ${fieldErrors.openingDirection ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+        >
+          <span className="font-sans text-[14px] flex items-center gap-1.5">
+            <span className="font-semibold text-[#131720]">Opening Direction — </span>
+            {selectedOpeningDirection ? (
+              <span className="text-[#657186]">{selectedOpeningDirection.name}</span>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setIsOpeningDirectionGuideOpen(true)}
+              className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-[#eaedf0] text-[#4051b5] transition-colors hover:bg-[#4051b5] hover:text-white"
+              aria-label="Learn more about opening direction options"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </button>
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {OPENING_DIRECTION_OPTIONS.map((direction) => (
+              <button
+                key={direction.id}
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, openingDirection: direction.id }));
+                  clearFieldError("openingDirection");
+                  clearFieldError("size");
+                }}
+                className={`px-4 py-2 rounded-full border text-sm transition-colors ${config.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : fieldErrors.openingDirection ? "border-[#dc2626] text-[#657186] hover:border-[#131720]" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
+              >
+                {direction.name}
+                {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, product.currency)})` : ""}
+              </button>
+            ))}
+          </div>
+          {fieldErrors.openingDirection ? (
+            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+              {fieldErrors.openingDirection}
+            </p>
+          ) : null}
+        </div>
+
+        <div
+          ref={frameColorSectionRef}
+          className={`flex flex-col gap-2 mt-2 scroll-mt-28 ${fieldErrors.frameColor ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
+        >
+          <span className="font-sans text-[14px]">
+            <span className="font-semibold text-[#131720]">Frame Color — </span>
+            <span className="text-[#657186]">{selectedFrameColor?.name}</span>
+          </span>
+          <div className="flex gap-3">
+            {FRAME_COLOR_OPTIONS.map((color) => (
+              <button
+                key={color.id}
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, frameColor: color.id }));
+                  clearFieldError("frameColor");
+                }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.frameColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : fieldErrors.frameColor ? 'ring-1 ring-[#dc2626] hover:ring-[#131720]/50' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
+                style={{ backgroundColor: color.hex }}
+                aria-label={`Select ${color.name}`}
+              />
+            ))}
+          </div>
+          {fieldErrors.frameColor ? (
+            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+              {fieldErrors.frameColor}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
       {/* Size */}
       <div
         ref={sizeSectionRef}
@@ -685,6 +814,8 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
                   type="number"
                   min={dimension.limits.min}
                   max={dimension.limits.max}
+                  step="any"
+                  disabled={isSizeLocked}
                   value={dimension.value || ""}
                   onChange={(event) => {
                     dimension.onValueChange(Number(event.target.value) || 0);
@@ -706,6 +837,7 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
                     dimension.onFractionChange(event.target.value);
                     clearFieldError("size");
                   }}
+                  disabled={isSizeLocked}
                   aria-label={`${dimension.name} ${unit === "in" ? "sixteenths" : "millimeters"}`}
                   className="mt-0.5 w-full appearance-none bg-transparent text-sm text-[#131720] outline-none"
                 >
@@ -718,115 +850,21 @@ export default function ProductInfo({ product, initialReviewsData }: ProductInfo
           ))}
         </div>
 
-        {fieldErrors.size ? (
-          <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
-            {fieldErrors.size}
+        {isSizeLocked ? (
+          <p className="font-sans text-[13px] text-[#657186]">
+            Choose an opening direction above to see the allowed sizes.
+          </p>
+        ) : displayLimits ? (
+          <p className="font-sans text-[13px] text-[#657186]">
+            Allowed: width {displayLimits.width.placeholder} {unit}, height {displayLimits.height.placeholder} {unit}.
           </p>
         ) : null}
-      </div>
 
-      {/* Colors */}
-      <div className="flex flex-col gap-4 mt-6">
-        <div
-          ref={blindColorSectionRef}
-          className={`flex flex-col gap-2 scroll-mt-28 ${fieldErrors.blindColor ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
-        >
-          <span className="font-sans text-[14px]">
-            <span className="font-semibold text-[#131720]">Blind Color — </span>
-            <span className="text-[#657186]">{selectedBlindColor?.name}</span>
-          </span>
-          <div className="flex gap-3">
-            {BLIND_COLOR_OPTIONS.map((color) => (
-              <button
-                key={color.id}
-                onClick={() => {
-                  setConfig((prev) => ({ ...prev, blindColor: color.id }));
-                  clearFieldError("blindColor");
-                }}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.blindColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : fieldErrors.blindColor ? 'ring-1 ring-[#dc2626] hover:ring-[#131720]/50' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
-                style={{ backgroundColor: color.hex }}
-                aria-label={`Select ${color.name}`}
-              />
-            ))}
-          </div>
-          {fieldErrors.blindColor ? (
-            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
-              {fieldErrors.blindColor}
-            </p>
-          ) : null}
-        </div>
-
-        <div
-          ref={frameColorSectionRef}
-          className={`flex flex-col gap-2 mt-2 scroll-mt-28 ${fieldErrors.frameColor ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
-        >
-          <span className="font-sans text-[14px]">
-            <span className="font-semibold text-[#131720]">Frame Color — </span>
-            <span className="text-[#657186]">{selectedFrameColor?.name}</span>
-          </span>
-          <div className="flex gap-3">
-            {FRAME_COLOR_OPTIONS.map((color) => (
-              <button
-                key={color.id}
-                onClick={() => {
-                  setConfig((prev) => ({ ...prev, frameColor: color.id }));
-                  clearFieldError("frameColor");
-                }}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.frameColor === color.id ? 'ring-2 ring-offset-2 ring-[#131720]' : fieldErrors.frameColor ? 'ring-1 ring-[#dc2626] hover:ring-[#131720]/50' : 'ring-1 ring-[#dbe0e6] hover:ring-[#131720]/50'}`}
-                style={{ backgroundColor: color.hex }}
-                aria-label={`Select ${color.name}`}
-              />
-            ))}
-          </div>
-          {fieldErrors.frameColor ? (
-            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
-              {fieldErrors.frameColor}
-            </p>
-          ) : null}
-        </div>
-
-        <div
-          ref={openingDirectionSectionRef}
-          className={`flex flex-col gap-2 mt-2 scroll-mt-28 ${fieldErrors.openingDirection ? "rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4" : ""}`}
-        >
-          <span className="font-sans text-[14px] flex items-center gap-1.5">
-            <span className="font-semibold text-[#131720]">Opening Direction — </span>
-            {selectedOpeningDirection ? (
-              <span className="text-[#657186]">{selectedOpeningDirection.name}</span>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setIsOpeningDirectionGuideOpen(true)}
-              className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-[#eaedf0] text-[#4051b5] transition-colors hover:bg-[#4051b5] hover:text-white"
-              aria-label="Learn more about opening direction options"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-            </button>
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {OPENING_DIRECTION_OPTIONS.map((direction) => (
-              <button
-                key={direction.id}
-                onClick={() => {
-                  setConfig((prev) => ({ ...prev, openingDirection: direction.id }));
-                  clearFieldError("openingDirection");
-                }}
-                className={`px-4 py-2 rounded-full border text-sm transition-colors ${config.openingDirection === direction.id ? "border-[#131720] bg-[#131720] text-white" : fieldErrors.openingDirection ? "border-[#dc2626] text-[#657186] hover:border-[#131720]" : "border-[#dbe0e6] text-[#657186] hover:border-[#131720]"}`}
-              >
-                {direction.name}
-                {direction.price ? ` (+ ${formatPriceWithCurrency(direction.price, product.currency)})` : ""}
-              </button>
-            ))}
-          </div>
-          {fieldErrors.openingDirection ? (
-            <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
-              {fieldErrors.openingDirection}
-            </p>
-          ) : null}
-        </div>
+        {fieldErrors.size || liveSizeError ? (
+          <p role="alert" className="font-sans text-[13px] font-medium text-[#dc2626]">
+            {fieldErrors.size ?? liveSizeError}
+          </p>
+        ) : null}
       </div>
 
       <OpeningDirectionGuideModal
